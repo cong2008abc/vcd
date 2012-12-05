@@ -1,13 +1,8 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-
-# Compiled Dynamic libraries
+feature_db/*
+feature_db
+*.db
+*.smp
 *.so
-*.dylib
+*.o
+*.out
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
