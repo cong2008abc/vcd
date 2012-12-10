@@ -7,8 +7,10 @@ TEST = info_db.o
 TEST += data_stream.o
 TEST += feature_db.o
 TEST += utils.o
+TEST += frame.o
+TEST += frame_index.o
 
-all: build
+all: detector build
 
 detector:
 	cd ./feature && make
@@ -28,6 +30,10 @@ data_stream.o: data_stream.cc
 feature_db.o: feature_db.cc
 	$(cc) $(FLAG) -c $<
 utils.o: utils.cc
+	$(cc) $(FLAG) -c $<
+frame.o: frame.cc
+	$(cc) $(FLAG) -c $<
+frame_index.o: frame_index.cc
 	$(cc) $(FLAG) -c $<
 
 clean:

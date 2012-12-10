@@ -8,6 +8,7 @@
 
 namespace vcd {
 
+
 class DataStream {
 public:
     DataStream();
@@ -29,6 +30,7 @@ private:
     //struct dirent **_namelist;
     FeatureDB *_feat_db;
     InfoDB *_info_db;
+    uint8 *_img_data;
 };
 
 } // namespace vcd

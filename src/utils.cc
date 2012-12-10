@@ -61,22 +61,21 @@ void set_pixval32f(const IplImage *src, int w, int h, float val) {
     ptr[w] = val;
 }
 
-uint8 *iplImage2uint8point(IplImage *src) {
+bool iplImage2uint8point(IplImage *src, uint8 *data) {
     int w = src->width;
     int h = src->height;
 
-    uint8 *data = new uint8[w * h];
     int idx = 0;
     for (int i = 0; i < h; i++) {
         uint8 *ptr = (uint8 *)(src->imageData + i * src->widthStep);
         for (int j = 0; j < w; j++) {
             //if (ptr[j] != 16) printf("%d %d\n", j, i);
-    //        printf("%d ", ptr[j]);
+            //printf("%d ", idx);
             data[idx++] = ptr[j];
         }
     }
 
-    return data;
+    return true;
 }
 
 void show_image_from_path(const char *path) {
@@ -93,33 +92,34 @@ void show_image_from_path(const char *path, const char *pathB) {
     show_image(imgB, "b");
 }
 
-uint8* load_jpg_image(const char *path, int &w, int &h) {
+bool load_jpg_image(const char *path, int &w, int &h, uint8 *data, int len) {
     IplImage *img = cvLoadImage(path);
     if (img == NULL) {
         printf("Load Jpg error, file not exists! %s\n", path);
-        return NULL;
+        return false;
     }
     IplImage *comY;
     if (img->nChannels != 1) {
-//        printf("%d\n", img->nChannels);
         comY = get_component_Y(img);
-    //    comY = img;
     } else {
-        //printf("do nothing\n");
         comY = img;
     }
 
-    uint8 *data = iplImage2uint8point(comY);
-	
 	w = comY->width;
 	h = comY->height;	
+    if (w * h > len) {
+        fprintf(stderr, "Image is to large!\n");
+        return false;
+    }
+
+    iplImage2uint8point(comY, data);
 
     if (img->nChannels != 1) {
         cvReleaseImage(&comY);
     }
     cvReleaseImage(&img);
 
-    return data;
+    return true;
 }
 
 IplImage *yuv2iplImage(const uint8* data, int w, int h) {

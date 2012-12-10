@@ -14,17 +14,21 @@ namespace vcd {
 
 typedef unsigned char uint8;
 
+const int kMaxImageSize = 1960 * 1024;
+
 DataStream::DataStream() {
     _feat_db = new FeatureDB();
     _info_db = new InfoDB();
 
     //_feat_db->BuildDB(F_DB_PATH);
     _info_db->OpenDB(INFO_DB_PATH);
+    _img_data = new uint8[kMaxImageSize];
 }
 
 DataStream::~DataStream() {
     _feat_db->Dump(F_DB_PATH);
     _info_db->Dump(INFO_DB_PATH);
+    delete [] _img_data;
 }
 
 bool DataStream::BuildMediaLib(const char *path) {
@@ -36,7 +40,7 @@ bool DataStream::BuildMediaLib(const char *path) {
     }
     
     //_feat_db = new FeatureDB(DB_PATH);
-    for (int i = 0; i < file_num && i < 10; ++i) {
+    for (int i = 0; i < file_num; ++i) {
         char full_name[128];
         const char *media_name = namelist[i]->d_name;
         sprintf(full_name, "%s%s", path, media_name);
@@ -56,11 +60,13 @@ bool DataStream::OpenJpg(const char *jpg_name) {
     // load_jpg_image will alloc memory and return it,
     // because i don't know how many memory i need for this jpg
     int w, h;
-    uint8 *data = load_jpg_image(jpg_name, w, h);
+    if (!load_jpg_image(jpg_name, w, h, _img_data, kMaxImageSize)) {
+        return false;
+    }
 
     // detect this feature
     Feature *feat = FeatureFactory(kImprovedOM);
-    feat->ExtractFrame(data, w, h);
+    feat->ExtractFrame(_img_data, w, h);
 
     // get a key_id of this jpg
     uint32 base_id = _info_db->Insert(jpg_name);
@@ -69,8 +75,6 @@ bool DataStream::OpenJpg(const char *jpg_name) {
 
     // add this feature to the library
     _feat_db->AddFeature(feat);
-
-    delete [] data;
 
     return true;
 }

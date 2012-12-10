@@ -16,6 +16,8 @@ int Feature::SetKeyId(int key_id) {
     return 1;
 }
 
+
+
 /*
  * implement ImproveOMFeature class
  */
@@ -53,13 +55,54 @@ bool ImpOMFeature::ReadFromFile(FILE *pfile) {
     return true;
 }
 
-float ImpOMFeature::Compare(const Feature &rf) {
+float ImpOMFeature::Compare(const Feature *rf) {
     //TODO(zhouchao) compare two feature distance
     //...
 
-    return 1.0;
+    const ImpOMFeature *ptr_r = dynamic_cast<const ImpOMFeature*>(rf);
+    float ret_color = InterCompare(_arr_color, ptr_r->_arr_color);
+    float ret_entropy = InterCompare(_arr_entropy, ptr_r->_arr_entropy);
+
+    return ret_color > ret_entropy ? ret_entropy : ret_color;
 }
 
+float ImpOMFeature::InterCompare(const uint8 *arr_a, const uint8 *arr_b) {
+    uint8 s[ImpOMFeature::FEATURE_LEN], d[ImpOMFeature::FEATURE_LEN];
+    int len = ImpOMFeature::FEATURE_LEN;
+    for (int i = 0; i < len; ++i) {
+        s[arr_a[i]] = i;
+    }
+
+    for (int i = 0; i < len; ++i) {
+        d[i] = arr_b[s[i]];
+    }
+
+    int max = 0;
+    for (int i = 0; i < len; ++i) {
+        int tmp = 0;
+        for (int j  = 0; j <= i; j++) {
+            if (s[j] > i) tmp++;
+        }
+        if (tmp > max) {
+            max = tmp;
+        }
+    }
+
+    int n = len / 2;
+    float k = (n - 2 * max) / (float)n;
+
+    return k;
+}
+
+bool ImpOMFeature::ExtractIndex(const uint8 *data, int *idx_a, int *idx_b) {
+    //
+}
+
+
+
+/*
+ * non-member functions
+ */
 Feature *FeatureFactory(int type) {
     switch (type) {
         case kImprovedOM:

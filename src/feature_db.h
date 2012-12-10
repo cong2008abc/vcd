@@ -43,6 +43,8 @@ public:
      */
     int QueryFeature(const Feature *feat);
 
+    bool ExistSimilarFeature(const Feature *feat);
+
 private:
     Feature **_arr_feat;
     int _capacity;

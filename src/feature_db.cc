@@ -9,6 +9,7 @@
 namespace vcd {
 
 typedef unsigned int uint32;
+const float OM_THRESHOLD = 0.64999;
 
 FeatureDB::FeatureDB() {
     _arr_feat = new Feature*[kMaxDBLen];
@@ -89,4 +90,15 @@ bool FeatureDB::Dump(const char *dir) {
     }
     return true;
 }
+
+bool FeatureDB::ExistSimilarFeature(const Feature *feat) {
+    for (int i = 0; i < _cur_len; ++i) {
+        float sim = _arr_feat[i]->Compare(feat);
+        if (sim > OM_THRESHOLD) {
+            return true;
+        }
+    }
+    return false;
+}
+
 } // namespace vcd

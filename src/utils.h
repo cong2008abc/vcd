@@ -22,7 +22,7 @@ unsigned char *iplImage2uint8point(IplImage *src);
 IplImage *yuv2iplImage(const uint8* data, int w, int h);
 void show_image_from_path(const char *path, const char *pathB);
 void show_image_from_path(const char *path);
-uint8* load_jpg_image(const char *path, int &w, int &h);
+bool load_jpg_image(const char *path, int &w, int &h, uint8*, int);
 void show_yuv(const uint8* data, int w, int h);
 
 void show_yuv_and_path(const uint8* data, int w, int h, const char *path);
