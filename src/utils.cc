@@ -293,3 +293,24 @@ void show_query_result(const uint8 *data, int w, int h,
 
     show_image(printImg, "result");
 } */
+
+void show_yuv(const char *path) {
+    FILE *pf = fopen(path, "r");
+    if (pf == NULL) {
+        fprintf(stderr, "Open Yuv Error!\n");
+    }
+
+    int w, h;
+    fread(&w, sizeof(int), 1, pf);
+    fread(&h, sizeof(int), 1, pf);
+
+    uint8 *data = new uint8[w * h];
+    fread(data, sizeof(uint8), w * h, pf);
+
+    IplImage *img = yuv2iplImage(data, w, h);
+    
+    show_image(img, "yuv");
+
+    cvReleaseImage(&img);
+    delete [] data;
+}

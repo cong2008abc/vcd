@@ -29,8 +29,5 @@ void show_yuv_and_path(const uint8* data, int w, int h, const char *path);
 
 void drawPoint(IplImage *src, int w, int h);
 void drawPoint( IplImage *src, int w, int h, int color );
-//void show_query_result(const uint8 *data, int w, int h,
-//        BaseFeature **result, int nRes);
-//void show_query_result(IplImage* query, BaseFeature** result, int nRes);
-//void show_query_result(const char* query, BaseFeature** result, int nRes);
+void show_yuv(const char *path);
 #endif

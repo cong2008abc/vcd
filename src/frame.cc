@@ -1,4 +1,6 @@
 #include "frame.h"
+#include <sstream>
+#include <iostream>
 
 namespace vcd {
 
@@ -10,8 +12,8 @@ Frame::Frame() {
 }
 
 Frame::~Frame() {
-    delete [] _om_dt;
-    delete [] _color_dt;
+    delete _om_dt;
+    delete _color_dt;
 }
 
 bool Frame::ExtractFeature(const uint8 *data, int w, int h) {
@@ -28,6 +30,15 @@ bool Frame::ExtractFeature(const uint8 *data, int w, int h) {
             _hash_key = _hash_key | 0x1;
         }
     }
+
+    // generate string hash key based on the om feature
+    std::stringstream ss;
+    for (int i = 0; i < ImpOMFeature::FEATURE_LEN; ++i) {
+        ss << (int)(om_feat->_arr_color[i]);
+    }
+    ss >> _str_hash_key;
+
+    //std::cout << _str_hash_key << std::endl;
 }
 
 bool Frame::EqualOM(const Frame *ptr) {
@@ -54,6 +65,10 @@ bool Frame::EqualHist(const Frame *ptr) {
 
 uint64 Frame::GetHashKey() const{
     return _hash_key;
+}
+
+const std::string& Frame::GetStrKey() const {
+    return _str_hash_key;
 }
 
 bool Frame::SetKey(uint32 key) {

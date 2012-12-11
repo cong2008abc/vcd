@@ -3,6 +3,7 @@
 
 #include "feature/feature.h"
 #include "feature/color_hist.h"
+#include <string>
 
 namespace vcd {
 
@@ -17,6 +18,7 @@ public:
 
     virtual bool ExtractFeature(const uint8 *data, int, int);
     virtual uint64 GetHashKey() const;
+    virtual const std::string& GetStrKey() const;
     virtual bool EqualOM(const Frame *ptr);
     virtual bool EqualHist(const Frame *ptr);
 
@@ -30,6 +32,7 @@ private:
     Feature *_color_dt;     // feature pointer of color hist feature
     
     uint64 _hash_key;
+    std::string _str_hash_key;
 };
 
 } // namespace vcd

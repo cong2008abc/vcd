@@ -1,8 +1,9 @@
 #include "color_hist.h"
+#include <iostream>
 
 namespace vcd {
 
-const int HIST_NUM = 16;
+const int HIST_NUM = 32;
 const int N = 3;
 int ColorHistFeature::FEATURE_LEN = N * N * HIST_NUM;
 
