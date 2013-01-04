@@ -1,6 +1,8 @@
 #ifndef _DEFINE_H_
 #define _DEFINE_H_
 
+#include "feature/define.h"
+
 namespace vcd {
 
 #define ASSGIN(key, frame_id) ((key << 12) | (frame_id))

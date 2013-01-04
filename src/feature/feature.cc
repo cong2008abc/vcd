@@ -1,6 +1,7 @@
 #include "feature.h"
 #include "om.h"
 #include <stdlib.h>
+#include <math.h>
 
 namespace vcd {
 
@@ -21,7 +22,7 @@ int Feature::SetKeyId(int key_id) {
 /*
  * implement ImproveOMFeature class
  */
-int ImpOMFeature::FEATURE_LEN = 64;
+int ImpOMFeature::FEATURE_LEN = 16;
 
 ImpOMFeature::ImpOMFeature() {
     _arr_color = NULL;
@@ -33,9 +34,11 @@ ImpOMFeature::~ImpOMFeature() {
 
 bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h) {
     _arr_color = new uint8[ImpOMFeature::FEATURE_LEN];
-    _arr_entropy = new uint8[ImpOMFeature::FEATURE_LEN];
+    //_arr_entropy = new uint8[ImpOMFeature::FEATURE_LEN];
+    
+    int n = static_cast<int>(sqrt(ImpOMFeature::FEATURE_LEN));
 
-    get_real_feature(data, w, h, 8, _arr_color, _arr_entropy);
+    get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
 
     return true;
 }

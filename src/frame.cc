@@ -34,9 +34,15 @@ bool Frame::ExtractFeature(const uint8 *data, int w, int h) {
     // generate string hash key based on the om feature
     std::stringstream ss;
     for (int i = 0; i < ImpOMFeature::FEATURE_LEN; ++i) {
-        ss << (int)(om_feat->_arr_color[i]);
+        if (om_feat->_arr_color[i] < 10) {
+            ss << 0 << (int)(om_feat->_arr_color[i]);
+        } else {
+            ss << (int)(om_feat->_arr_color[i]);
+        }
     }
+    //ss << "\n";
     ss >> _str_hash_key;
+    _str_hash_key += "\n";
 
     //std::cout << _str_hash_key << std::endl;
 }

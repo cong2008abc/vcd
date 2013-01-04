@@ -19,6 +19,7 @@ void test_dir(const char *path) {
     char full_name[128];
     for (int i = 0; i < file_num; ++i) {
         sprintf(full_name, "%s%s", path, namelist[i]->d_name);
+        printf("%s\n", full_name);
 
         int w, h;
         if (!load_jpg_image(full_name, w, h, img_data, kMaxSize)) {

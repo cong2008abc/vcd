@@ -43,6 +43,45 @@ private:
     s_ele_type _s_frame_db;
 };
 
+
+/*
+ *
+ */
+
+class FrameLRU {
+public:
+    FrameLRU(const int size);
+    ~FrameLRU();
+    
+    Frame* Update(Frame *frame);
+
+private:
+    Frame **frame_lru_;
+    const int k_lru_size_;
+    int pos;
+    int flag;
+};
+
+const int kDefaultFrameCount = 1024 * 1024 * 1;
+
+class FrameIndexLRU {
+public:
+    FrameIndexLRU(const int size = kDefaultFrameCount);
+    ~FrameIndexLRU();
+
+    virtual int Insert(Frame *ptr);
+    virtual int Delete(Frame *ptr);
+
+private:
+    typedef std::map<const std::string, std::vector<Frame*>*> ele_type;
+    typedef std::map<const std::string, int> ele_count_type;
+
+    ele_type frame_db_;
+    ele_count_type frame_count_;
+
+    FrameLRU *frame_lru_;
+};
+
 } // namespace vcd
 
 #endif
