@@ -69,6 +69,11 @@ bool Frame::EqualHist(const Frame *ptr) {
     return false;
 }
 
+bool Frame::DumpToFile(FILE *pf) {
+	const ColorHistFeature *ptr_color = dynamic_cast<const ColorHistFeature*>(_color_dt);
+	fwrite(ptr_color->_arr_hist, sizeof(float), ColorHistFeature::FEATURE_LEN, pf);	
+}
+
 uint64 Frame::GetHashKey() const{
     return _hash_key;
 }

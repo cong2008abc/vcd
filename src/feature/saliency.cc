@@ -64,6 +64,13 @@ bool Saliency::ExtractArea(const uint8 *data, const int w, const int h,
         result[i] = 0;
     }
 
+    for (uint32 i = 0; i < N; ++i) {
+        if (data[i] > 200) {
+            result[i] = 255;
+        }
+    }
+
+    /*
     std::vector<Point> max_pixel; 
     uint32 local_size = 10;
     for (uint32 i = local_size; i < h - local_size; ++i) {
@@ -92,6 +99,7 @@ bool Saliency::ExtractArea(const uint8 *data, const int w, const int h,
             }
         }
     }
+    */
 
     delete [] sa_map;
     return true;

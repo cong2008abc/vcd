@@ -15,6 +15,8 @@ VcdFile::VcdFile(const char *path) {
 
     cache_ = new char[kCacheSize];
     strcpy(path_, path);
+
+		Dump();
 }
 
 VcdFile::~VcdFile() {
@@ -24,6 +26,7 @@ VcdFile::~VcdFile() {
 
     if (pf_ != NULL) {
         fclose(pf_);
+				fclose(hpf_);
         pf_ = NULL;
     }
 
@@ -51,10 +54,13 @@ bool VcdFile::AppendFrame(Frame *ptr) {
 
     // copy the [ str + '\n' ] to the cache
 
+	ptr->DumpToFile(hpf_);
+
     frame_count_++;
     if (frame_count_ >= kMaxFrameCount) {
         Dump();
         fclose(pf_);
+		fclose(hpf_);
         pf_ == NULL;
     }
 
@@ -87,6 +93,12 @@ bool VcdFile::Dump() {
             fprintf(stderr, "Open db File Error!\n");
             return false;
         }
+
+				strcat(tmp, "h");
+				hpf_ = fopen(tmp, "w");
+				if (hpf_ == NULL) {
+					return false;
+				}
     }
 
     fwrite(cache_, sizeof(char), cache_len_, pf_);

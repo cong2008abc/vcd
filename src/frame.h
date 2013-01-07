@@ -22,6 +22,8 @@ public:
     virtual bool EqualOM(const Frame *ptr);
     virtual bool EqualHist(const Frame *ptr);
 
+		virtual bool DumpToFile(FILE *pf);
+
     bool SetKey(uint32 key);
     uint32 GetKey();
 

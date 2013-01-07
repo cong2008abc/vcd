@@ -125,8 +125,9 @@ def out_sort(path):
     # by the hash_value
     for p,d,f in os.walk(path):
         for db in f:
-            if db.find('db') != -1:
+            if db[-2:] == 'db':
                 read_db(os.path.join(p,db), p)
+		print 'Finish Partition!'
 
     # sort the tmpfile
     for tmp in tmpfile:
@@ -134,6 +135,7 @@ def out_sort(path):
         sort_tmp(path + 'tmp_' + str(tmp), pf)
         pf.close()
 
+		#print 'Waiting...'
     # merge the tmp sorted file
     merge_sorted(path)
 

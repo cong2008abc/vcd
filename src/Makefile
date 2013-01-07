@@ -1,7 +1,7 @@
 cc = g++
 
 #FLAG = -L. -lfeature -Wl,-rpath,./
-FLAG = -fPIC
+FLAG = -fPIC -g
 LFLAG = -L. libfeature.a
 SFLAG = `pkg-config --libs opencv --cflags opencv`
 

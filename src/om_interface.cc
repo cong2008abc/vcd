@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <map>
+#include <pthread.h>
 
 vcd::FrameIndex *feature_idx;
 vcd::FrameIndexLRU *feature_lru_idx;
@@ -13,6 +14,7 @@ vcd::VcdFile *v_file;
 char path[128];
 int global_jpg_idx;
 std::map<const std::string, int> *str2idx;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 const char *YUV = "/yuv/";
 const char *DB = "/db/";
@@ -59,7 +61,7 @@ void save_img(const vcd::Frame *frame, int idx, unsigned char *data, int w, int 
 
 int open_db(char *db_path) {
     //feature_idx = new vcd::FrameIndexS();
-    feature_lru_idx = new vcd::FrameIndexLRU();
+    feature_lru_idx = new vcd::FrameIndexLRU(1024 * 10);
     strcpy(path, db_path);
 
     str2idx = new std::map<const std::string, int>();
@@ -67,24 +69,31 @@ int open_db(char *db_path) {
 
     //new method
     v_file = new vcd::VcdFile(db_path);
+		//lock = PTHREAD_MUTEX_INITIALIZER;
 }
 
 int close_db() {
     delete feature_idx; 
 
     delete v_file;
+
+	return 0;
 }
 
 int query_image(unsigned char *data, int w, int h) {
     vcd::Frame *frame = new vcd::Frame();
     frame->ExtractFeature(data, w, h);
 
-    if (feature_lru_idx->Insert(frame) == 0) {
-        //printf("ok\n");
-        v_file->AppendFrame(frame);
-    } else {
-        delete frame;
-    }
+		pthread_mutex_lock(&lock);
+		v_file->AppendFrame(frame);
+		pthread_mutex_unlock(&lock);
+		delete frame;
+//    if (feature_lru_idx->Insert(frame) == 0) {
+//        //printf("ok\n");
+//        v_file->AppendFrame(frame);
+//    } else {
+//        delete frame;
+//    }
 
     /*
     int idx;
@@ -104,6 +113,7 @@ int query_image(unsigned char *data, int w, int h) {
      * the frame has insert into the index structure, so it 
      * was controled by the idx, it don't need to do anything here.
      */
+		return 0;
 }
 
 

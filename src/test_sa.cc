@@ -5,8 +5,9 @@
 #include <dirent.h>
 #include <highgui.h>
 
-const int LIB_NUM = 3;
-const char *lib[] = {"/mnt/db/1/",
+const int LIB_NUM = 1;
+const char *lib[] = {"/mnt/db/sample/",
+                     "/mnt/db/1/",
                      "/mnt/db/2/",
                      "/mnt/db/3/"};
 const int kMaxSize = 1024 * 1024 * 3;
@@ -26,10 +27,11 @@ void test(const char *path) {
 
     vcd::Saliency sa;
     uint8 *result = new uint8[w * h];
-    // sa.ExtractArea(img_data, w, h, result);
+    //sa.ExtractArea(img_data, w, h, result);
     sa.ExtractSaliency(img_data, w, h, result);
 
     //with pause!
+    show_yuv(img_data, w, h);
     show_yuv(result, w, h);
 
     delete [] result;
@@ -59,7 +61,7 @@ void test_dir(const char *path) {
         sprintf(full_name, "%s%s", path, namelist[i]->d_name);
         printf("%s\n", full_name);
 
-        test_cvpr(full_name);
+        test(full_name);
     }
 }
 

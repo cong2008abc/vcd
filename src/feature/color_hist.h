@@ -6,6 +6,9 @@
 namespace vcd {
 
 class ColorHistFeature: public Feature {
+
+friend class Frame;
+
 public:
     ColorHistFeature();
     virtual ~ColorHistFeature();

@@ -23,6 +23,7 @@ private:
     int cache_len_;
     char *cache_;
     FILE *pf_;
+		FILE *hpf_;			// file handle for hist feature
 };
 
 } // namespace vcd

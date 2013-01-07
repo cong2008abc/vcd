@@ -139,6 +139,10 @@ Frame *FrameLRU::Update(Frame *frame) {
         Frame *ret = frame_lru_[pos];
         frame_lru_[pos++] = frame; 
 
+				if (pos >= k_lru_size_) {
+						pos = 0;
+				}
+
         return ret;
     }
 }
@@ -204,7 +208,7 @@ int FrameIndexLRU::Insert(Frame *ptr) {
     if (del_ptr != NULL) {
         const std::string &del_key = del_ptr->GetStrKey();
 
-        if (frame_count_[key] == 1) {
+        if (frame_count_[del_key] == 1) {
             std::vector<Frame*> *vt = frame_db_[del_key];
             for (size_t t = 0; t < vt->size(); ++t) {
                 delete vt->at(t);
@@ -212,7 +216,7 @@ int FrameIndexLRU::Insert(Frame *ptr) {
             delete vt;
             frame_db_.erase(del_key);
         } else {
-            frame_count_[key]--;
+            frame_count_[del_key]--;
         }
     }
 
