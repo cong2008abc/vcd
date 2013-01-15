@@ -6,27 +6,24 @@ namespace vcd {
 
 const int kCacheSize = 1024 * 32; // 4M cache
 // one file store 100M features
-const int kMaxFrameCount = 1024 * 1024 * 100; 
 
-VcdFile::VcdFile(const char *path) {
-    pf_ = NULL;
-    frame_count_ = 0;
-    cache_len_ = 0;
+VcdFile::VcdFile(const char *path, const char *type_name,
+                 const int max_count)
+    : max_size_(max_count), save_size_(0),
+      left_space_(kCacheSize), pf_(NULL) {
 
     cache_ = new char[kCacheSize];
     strcpy(path_, path);
-
-		Dump();
+    strcpy(type_name_, type_name);
 }
 
 VcdFile::~VcdFile() {
-    if (cache_len_ != 0) {
+    if (left_space_ != kCacheSize) {
         Dump();
     }
 
     if (pf_ != NULL) {
         fclose(pf_);
-				fclose(hpf_);
         pf_ = NULL;
     }
 
@@ -34,42 +31,41 @@ VcdFile::~VcdFile() {
 }
 
 bool VcdFile::AppendFrame(Frame *ptr) {
-    const std::string &key = ptr->GetStrKey();
-    //printf("%s", key.c_str());
-
-    size_t t = key.size();
-    
-    if (cache_len_ + t < kCacheSize) {
-        CopyToCache(key.c_str(), t);
-    } else {
-        size_t r = kCacheSize - cache_len_;
-        CopyToCache(key.c_str(), r);
-        Dump();
-        if (r != t) {
-            CopyToCache(key.c_str() + r, t - r);
-        }
-    }
-
-    //printf("%d %d %s\n", cache_len_, t, key.c_str());
-
-    // copy the [ str + '\n' ] to the cache
-
-	ptr->DumpToFile(hpf_);
-
-    frame_count_++;
-    if (frame_count_ >= kMaxFrameCount) {
-        Dump();
-        fclose(pf_);
-		fclose(hpf_);
-        pf_ == NULL;
-    }
-
     return true;
 }
 
+bool VcdFile::Append(const char *ptr, uint32 size) {
+    // copy the data to the memory cache,
+    // if the cache is full, flush it before
+    if (left_space_ >= size) {
+        CopyToCache(ptr, size);    
+    } else {
+        CopyToCache(ptr, left_space_);
+        uint32 t = left_space_;
+        Dump();
+        CopyToCache(ptr + t, size - t);
+    }
+
+    // add this piece of data to the total size,
+    // if this file save enough data, close it!
+    // and try to open a new one.
+    // in order to control the max size of one vcd file
+    save_size_ += size;
+    if (save_size_ > max_size_) {
+        Dump();
+        fclose(pf_);
+        pf_ = NULL;
+    }
+}
+
+bool VcdFile::Append(const std::string &data) {
+    return Append(data.c_str(), data.size());
+}
+
 bool VcdFile::CopyToCache(const char *ptr, int len) {
-    strncpy(cache_ + cache_len_, ptr, len);
-    cache_len_ += len;
+    uint32 start_pos = kCacheSize - left_space_;
+    strncpy(cache_ + start_pos, ptr, len);
+    left_space_ -= len;
 }
 
 bool VcdFile::Dump() {
@@ -77,32 +73,31 @@ bool VcdFile::Dump() {
 
     if (pf_ == NULL) {
         char tmp[128];    
-        time_t cur_time;
-        time(&cur_time);
-
-        struct tm *ptime;
-        ptime = localtime(&cur_time);
-
-        sprintf(tmp, "%s/%d%d%d_%d%d%d.db", path_,
-                (1900 + ptime->tm_year), (1 + ptime->tm_mon), 
-                ptime->tm_mday, ptime->tm_hour,
-                ptime->tm_min, ptime->tm_sec);
-        
+        GetFileName(tmp);
         pf_ = fopen(tmp, "w");
-        if (pf_ == NULL) {
-            fprintf(stderr, "Open db File Error!\n");
-            return false;
-        }
-
-				strcat(tmp, "h");
-				hpf_ = fopen(tmp, "w");
-				if (hpf_ == NULL) {
-					return false;
-				}
     }
 
-    fwrite(cache_, sizeof(char), cache_len_, pf_);
-    cache_len_ = 0;
+    fwrite(cache_, sizeof(char), kCacheSize - left_space_, pf_);
+    left_space_ = kCacheSize;
+
+    return true;
+}
+
+// vcd file will be named by
+// path/[cur_time].[type_name]
+bool VcdFile::GetFileName(char *ret) {
+    // 1= get cur time
+    time_t cur_time;
+    time(&cur_time);
+    struct tm *ptime;
+    ptime = localtime(&cur_time);
+
+    // 2= assemble all
+    sprintf(ret, "%s/%d%.2d%.2d_%.2d%.2d%.2d.%s", path_,
+            (1900 + ptime->tm_year), (1 + ptime->tm_mon), 
+            ptime->tm_mday, ptime->tm_hour,
+            ptime->tm_min, ptime->tm_sec,
+            type_name_);
 
     return true;
 }

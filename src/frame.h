@@ -18,11 +18,11 @@ public:
 
     virtual bool ExtractFeature(const uint8 *data, int, int);
     virtual uint64 GetHashKey() const;
-    virtual const std::string& GetStrKey() const;
+    virtual const std::string& GetOMStr() const;
     virtual bool EqualOM(const Frame *ptr);
     virtual bool EqualHist(const Frame *ptr);
 
-		virtual bool DumpToFile(FILE *pf);
+    virtual bool DumpToFile(FILE *pf);
 
     bool SetKey(uint32 key);
     uint32 GetKey();

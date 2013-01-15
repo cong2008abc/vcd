@@ -11,6 +11,7 @@ TEST += feature_db.o
 TEST += utils.o
 TEST += frame.o
 TEST += frame_index.o
+TEST += thread_safe_index.o
 TEST += sa_cvpr_09.o
 #TEST += om_interface.o
 
@@ -18,8 +19,9 @@ OM_LIB = frame.o
 OM_LIB += frame_index.o
 OM_LIB += om_interface.o
 OM_LIB += vcd_file.o
+OM_LIB += thread_safe_index.o
 
-all: detector test_sa
+all: detector test_om
 
 detector:
 	cd ./feature && make
@@ -57,6 +59,8 @@ utils.o: utils.cc
 frame.o: frame.cc
 	$(cc) $(FLAG) -c $<
 frame_index.o: frame_index.cc
+	$(cc) $(FLAG) -c $<
+thread_safe_index.o: thread_safe_index.cc
 	$(cc) $(FLAG) -c $<
 om_interface.o: om_interface.cc
 	$(cc) $(FLAG) -c $<

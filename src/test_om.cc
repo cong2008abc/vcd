@@ -26,6 +26,7 @@ void test_dir(const char *path) {
             continue;
         }
 
+        //printf("Load OK!\n");
         query_image(img_data, w, h);
     }
 }

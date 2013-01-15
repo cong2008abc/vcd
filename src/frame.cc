@@ -78,7 +78,7 @@ uint64 Frame::GetHashKey() const{
     return _hash_key;
 }
 
-const std::string& Frame::GetStrKey() const {
+const std::string& Frame::GetOMStr() const {
     return _str_hash_key;
 }
 

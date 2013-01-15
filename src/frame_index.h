@@ -15,35 +15,6 @@ enum QUERY_RESULT {
     CONFICT = 0x3
 };
 
-class FrameIndex {
-public:
-    FrameIndex();
-    virtual ~FrameIndex();
-
-    virtual int ExistFrame(const Frame *ptr);
-    virtual int AddFrame(Frame *ptr, int *idx);
-
-private:
-    typedef std::map<const uint64, std::vector<Frame*>*> ele_type;
-    //typedef std::map<const std::string, std::vector<Frame*>*> n_ele_type;
-    ele_type _frame_db;
-    //n_ele_type n_frame_db;
-};
-
-class FrameIndexS: public FrameIndex {
-public:
-    FrameIndexS();
-    ~FrameIndexS();
-
-    virtual int ExistFrame(const Frame *ptr);
-    virtual int AddFrame(Frame *ptr, int *idx);
-
-private:
-    typedef std::map<const std::string, std::vector<Frame*>*> s_ele_type;
-    s_ele_type _s_frame_db;
-};
-
-
 /*
  *
  */
