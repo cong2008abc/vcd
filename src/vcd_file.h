@@ -3,11 +3,12 @@
 
 #include "define.h"
 #include "frame.h"
+#include "lock.h"
 #include <stdio.h>
 
 namespace vcd {
 
-// max size of one vcf log file
+// max size of one vcf log file 2G
 const uint64 kMaxSize = 1024 * 1024 * 1024 * 2u; 
 
 class VcdFile {
@@ -19,6 +20,7 @@ public:
     bool AppendFrame(Frame *ptr);
     bool Append(const char *ptr, uint32 size);
     bool Append(const std::string &data);
+		bool Append(const char *ptr);
 private:
     bool Dump();
     bool CopyToCache(const char *ptr, int len);
@@ -33,6 +35,8 @@ private:
     int left_space_;    // the size of data in the memory
     char *cache_;
     FILE *pf_;
+
+		MutexLock locker_;
 };
 
 } // namespace vcd

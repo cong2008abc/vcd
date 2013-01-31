@@ -59,7 +59,12 @@ void save_img(const vcd::Frame *frame, int idx, unsigned char *data, int w, int 
 }
 
 int open_db(char *db_path) {
-    frame_index = new vcd::IndexLRU();
+		char log[128];
+		strcpy(log, db_path);
+		strcat(log, "om.log");
+		freopen(log, "w", stderr);
+
+    frame_index = new vcd::IndexLRU(1024u * 500);
     strcpy(path, db_path);
 
     str2idx = new std::map<const std::string, int>();

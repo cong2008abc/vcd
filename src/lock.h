@@ -39,7 +39,7 @@ public:
 
     ~MutexLockGuard() {
         locker_.UnLock();
-        //printf("UnLock!\n");
+        fprintf(stderr, "UnLock!\n");
     }
 private:
     MutexLock &locker_;

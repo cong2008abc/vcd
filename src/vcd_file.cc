@@ -4,7 +4,7 @@
 
 namespace vcd {
 
-const int kCacheSize = 1024 * 32; // 4M cache
+const int kCacheSize = 1024 * 32; // 32k cache
 // one file store 100M features
 
 VcdFile::VcdFile(const char *path, const char *type_name,
@@ -35,13 +35,14 @@ bool VcdFile::AppendFrame(Frame *ptr) {
 }
 
 bool VcdFile::Append(const char *ptr, uint32 size) {
+		MutexLockGuard lock(locker_);
     // copy the data to the memory cache,
     // if the cache is full, flush it before
     if (left_space_ >= size) {
         CopyToCache(ptr, size);    
     } else {
-        CopyToCache(ptr, left_space_);
         uint32 t = left_space_;
+        CopyToCache(ptr, left_space_);
         Dump();
         CopyToCache(ptr + t, size - t);
     }
@@ -62,15 +63,25 @@ bool VcdFile::Append(const std::string &data) {
     return Append(data.c_str(), data.size());
 }
 
+bool VcdFile::Append(const char *ptr) {
+		uint32 size = strlen(ptr);
+		return Append(ptr, size);
+}
+
 bool VcdFile::CopyToCache(const char *ptr, int len) {
+		//MutexLockGuard(locker_);
     uint32 start_pos = kCacheSize - left_space_;
     strncpy(cache_ + start_pos, ptr, len);
     left_space_ -= len;
+		if (left_space_ == 0) {
+				Dump();
+		}
 }
 
 bool VcdFile::Dump() {
     fprintf(stdout, "Try to Dump Frame!\n");
-
+		
+		//MutexLockGuard(locker_);
     if (pf_ == NULL) {
         char tmp[128];    
         GetFileName(tmp);
@@ -78,6 +89,7 @@ bool VcdFile::Dump() {
     }
 
     fwrite(cache_, sizeof(char), kCacheSize - left_space_, pf_);
+		//fflush(pf_);
     left_space_ = kCacheSize;
 
     return true;

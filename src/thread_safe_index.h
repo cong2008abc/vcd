@@ -13,7 +13,8 @@
 namespace vcd {
 
 const int kLockersNum = 0x7;
-const int kMaxFrameNum = 1024 * 1024 * 1;
+//const int kMaxFrameNum = 1024 * 1024 * 1;
+const int kMaxFrameNum = 1024u * 10;
 
 class IndexLRU {
     typedef Frame* frame_ptr_t;

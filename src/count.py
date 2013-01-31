@@ -125,7 +125,7 @@ def out_sort(path):
     # by the hash_value
     for p,d,f in os.walk(path):
         for db in f:
-            if db[-2:] == 'db':
+            if db[-3:] == 'omf':
                 read_db(os.path.join(p,db), p)
 		print 'Finish Partition!'
 

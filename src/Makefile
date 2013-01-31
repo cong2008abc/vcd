@@ -21,7 +21,8 @@ OM_LIB += om_interface.o
 OM_LIB += vcd_file.o
 OM_LIB += thread_safe_index.o
 
-all: detector test_om
+#for online test, only make for om lib!
+all: om
 
 detector:
 	cd ./feature && make
@@ -70,4 +71,4 @@ sa_cvpr_09.o: sa_cvpr_09.cc
 	$(cc) $(FLAG) $(SFLAG) -c $< 
 
 clean:
-	rm $(TEST) build_lib.o test_om.o build_lib test_om
+	rm $(TEST) $(OM_LIB) build_lib.o test_om.o build_lib test_om

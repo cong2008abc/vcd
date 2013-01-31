@@ -64,7 +64,7 @@ int FrameIndexLRU::Insert(Frame *ptr) {
 
     // 1= if the key don't appear
     // create a new item
-    if (frame_db_.count(key) == 0) {
+    if (frame_db_.find(key) == frame_db_.end()) {
         std::vector<Frame*> *vt = new std::vector<Frame*>();
         vt->push_back(ptr);
         
@@ -76,6 +76,8 @@ int FrameIndexLRU::Insert(Frame *ptr) {
     } else {
         // 2= check all frame in this item
         // if exist the same frame, do nothing
+				fprintf(stderr, "Insert %s\n", key.c_str());
+				fflush(stderr);
         std::vector<Frame*> *vt = frame_db_[key];
         size_t t;
         for (t = 0; t < vt->size(); ++t) {
@@ -98,15 +100,18 @@ int FrameIndexLRU::Insert(Frame *ptr) {
     // here exist a key-count pair!
     // if count[key] == 0, really delete this frame.
     if (del_ptr != NULL) {
-        const std::string &del_key = del_ptr->GetOMStr();
+        const std::string del_key = del_ptr->GetOMStr();
 
         if (frame_count_[del_key] == 1) {
+						fprintf(stderr, "Erase Key %s\n", del_key.c_str());
             std::vector<Frame*> *vt = frame_db_[del_key];
             for (size_t t = 0; t < vt->size(); ++t) {
                 delete vt->at(t);
             }
             delete vt;
             frame_db_.erase(del_key);
+						//fprintf(stderr, "Find Key %s = %d\n", del_key.c_str(),
+						//				frame_db_.find(del_key) == frame_db_.end());
         } else {
             frame_count_[del_key]--;
         }
