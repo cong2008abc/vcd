@@ -36,10 +36,10 @@ build: $(TEST) build_lib.o
 	$(cc) -o build_lib build_lib.o $(TEST) $(SFLAG) $(FLAG) $(LFLAG)
 
 test_om: om test_om.o $(TEST) om
-	$(cc) -o test_om test_om.o $(TEST) $(SFLAG) $(FLAG) -L. -lom -Wl,-rpath,./.
+	$(cc) -o run_test_om test_om.o $(TEST) $(SFLAG) $(FLAG) -L. -lom -Wl,-rpath,./.
 
 test_sa: test_sa.o $(TEST)
-	$(cc) -o test_sa test_sa.o $(TEST) $(SFLAG) $(FLAG) -L. -lfeature -Wl,-rpath,./.
+	$(cc) -o run_test_sa test_sa.o $(TEST) $(SFLAG) $(FLAG) -L. -lfeature -Wl,-rpath,./.
 
 om: $(OM_LIB)
 	$(cc) -shared -o libom.so $(OM_LIB) $(FLAG) $(LFLAG)

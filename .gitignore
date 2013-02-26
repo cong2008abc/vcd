@@ -9,6 +9,7 @@ feature_db
 src/test/*
 *tags
 *.omf
+run_*
 
 # Compiled Object files
 *.slo
