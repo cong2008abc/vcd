@@ -6,4 +6,6 @@ feature_db
 *.so
 *.o
 *.out
-
+src/test/*
+*tags
+*.omf

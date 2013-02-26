@@ -122,6 +122,54 @@ bool load_jpg_image(const char *path, int &w, int &h, uint8 *data, int len) {
     return true;
 }
 
+bool load_image_with_color(const char *path, int &w, int &h, uint8 *data, int len) {
+    if (path == NULL) {
+        fprintf(stderr, "NULL Pointer. %s %d\n", __FILE__, __LINE__);
+        return false;
+    }
+
+    IplImage *img = cvLoadImage(path);
+    if (img == NULL) {
+        fprintf(stderr, "Error Image Path. %s %d\n", __FILE__, __LINE__);
+        return false;
+    }
+
+    w = img->width;
+    h = img->height;
+    if (img->nChannels == 1) {
+        if (w * h > len) {
+            fprintf(stderr, "Image is too large! %s %d\n", __FILE__, __LINE__);
+            goto fail; 
+        }
+        iplImage2uint8point(img, data);
+    } else if (img->nChannels == 3) {
+        if (w * h * 3 > len)  {
+            fprintf(stderr, "Image is too large! %s %d\n", __FILE__, __LINE__);
+            goto fail;
+        } 
+        CvScalar p;
+        int idx = 0;
+        for (int i = 0; i < h; ++i) {
+            for (int j = 0; j < w; ++j) {
+                p = cvGet2D(img, i, j);
+                data[idx++] = p.val[0];
+                data[idx++] = p.val[1];
+                data[idx++] = p.val[2];
+            }
+        }
+    } else {
+        goto fail;
+    }
+
+succ:
+    cvReleaseImage(&img);
+    return true;
+
+fail:
+    cvReleaseImage(&img);
+    return false;
+}
+
 IplImage *yuv2iplImage(const uint8* data, int w, int h) {
     IplImage *img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1);
     int idx = 0;

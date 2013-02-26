@@ -2,6 +2,7 @@
 #define _UTILS_H_
 
 #include <cv.h>
+#include <highgui.h>
 //#include "feature.hpp"
 
 typedef unsigned char uint8;
@@ -23,6 +24,7 @@ IplImage *yuv2iplImage(const uint8* data, int w, int h);
 void show_image_from_path(const char *path, const char *pathB);
 void show_image_from_path(const char *path);
 bool load_jpg_image(const char *path, int &w, int &h, uint8*, int);
+bool load_image_with_color(const char *path, int &w, int &h, uint8 *data, int len);
 void show_yuv(const uint8* data, int w, int h);
 
 void show_yuv_and_path(const uint8* data, int w, int h, const char *path);
@@ -30,4 +32,11 @@ void show_yuv_and_path(const uint8* data, int w, int h, const char *path);
 void drawPoint(IplImage *src, int w, int h);
 void drawPoint( IplImage *src, int w, int h, int color );
 void show_yuv(const char *path);
+
+inline void show_mat(const cv::Mat &pic) {
+    cv::namedWindow("mat", CV_WINDOW_AUTOSIZE);
+    cv::imshow("mat", pic);
+    cv::waitKey(0);
+}
+
 #endif

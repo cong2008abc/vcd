@@ -35,7 +35,7 @@ inline void operator /= (cv::Vec<T1, 3> &v1, T2 v2) {
 
 bool Saliency::Get(const cv::Mat &src, cv::Mat &result) {
     cv::Mat sal, img3f;
-    img3f.convertTo(img3f, CV_32FC3, 1.0 / 255);
+    src.convertTo(img3f, CV_32FC3, 1.0 / 255);
     sal = GetHC(img3f);
 
     result = sal;
@@ -43,6 +43,7 @@ bool Saliency::Get(const cv::Mat &src, cv::Mat &result) {
 }
 
 cv::Mat Saliency::GetHC(const cv::Mat &img3f) {
+    CV_Assert(img3f.data != NULL);
     cv::Mat idx1i, bin_color3f, color_nums1i, weights1f, _color_sal;
     Quantize(img3f, idx1i, bin_color3f, color_nums1i);
     cv::cvtColor(bin_color3f, bin_color3f, CV_BGR2Lab);
@@ -96,6 +97,10 @@ int Saliency::Quantize(const cv::Mat &img3f, cv::Mat &idx1i, cv::Mat &_color3f,
     static const float clrTmp[3] = {clrNums[0] - 0.0001f, clrNums[1] - 0.0001f, clrNums[2] - 0.0001f};
     static const int w[3] = {clrNums[1] * clrNums[2], clrNums[2], 1};
 
+//    if (img3f.data == NULL) {
+//        printf("Error!\n");
+//        return 1;
+//    }
     //cv::CV_Assert(img3f.data != NULL);
     idx1i = cv::Mat::zeros(img3f.size(), CV_32S);
     int rows = img3f.rows, cols = img3f.cols;
@@ -131,7 +136,9 @@ int Saliency::Quantize(const cv::Mat &img3f, cv::Mat &idx1i, cv::Mat &_color3f,
         maxNum = (int)num.size();
         int maxDropNum = cvRound(rows * cols * (1-ratio));
         for (int crnt = num[maxNum-1].first; crnt < maxDropNum && maxNum > 1; maxNum--)
+        {
             crnt += num[maxNum - 2].first;
+        }
         maxNum = std::min(maxNum, 256); // To avoid very rarely case
         if (maxNum < 10)
             maxNum = std::min((int)pallet.size(), 100);

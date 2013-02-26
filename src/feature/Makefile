@@ -2,11 +2,13 @@ cc = g++
 AR = ar
 
 FLAG = -fPIC
+FLAG += `pkg-config --libs opencv --cflags opencv`
 
 TEST = feature.o
 TEST += om.o
 TEST += color_hist.o
 TEST += saliency.o
+TEST += img_saliency.o
 
 main: lib static
 
@@ -23,6 +25,8 @@ om.o: om.cc
 color_hist.o: color_hist.cc
 	$(cc) $(FLAG) -c $<
 saliency.o: saliency.cc
+	$(cc) $(FLAG) -c $<
+img_saliency.o: img_saliency.cc
 	$(cc) $(FLAG) -c $<
 
 clean:

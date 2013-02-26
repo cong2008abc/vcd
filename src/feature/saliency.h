@@ -24,6 +24,18 @@ public:
      * input the image and return the saliency map of the input
      */
     bool ExtractSaliency(const uint8 *data, const int w, const int h, uint8 *result);
+    bool ExtractSaliency2(const uint8 *data, const int w,
+                          const int h, uint8 *result);
+    bool ExtractSaliency3(const uint8 *data, const int w,
+                          const int h, uint8 *result);
+    bool ExtractSaliencyWithColor(const uint8 *data, const int w,
+                          const int h, uint8 *result);
+
+    /* 
+     * quantized blocked image 
+     */
+    bool QuantizedBlockedImage(const uint8 *data, const int w,
+                               const int h, uint8 *result);
 
     /*
      * input the image and

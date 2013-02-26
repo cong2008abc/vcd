@@ -21,24 +21,20 @@ bool IndexLRU::InsertThreadSafe(frame_ptr_t &frame) {
     MutexLock &locker = GetLocker(ikey);
     MutexLockGuard guard(locker);
 
-		fprintf(stderr, "Locker %d Locked!\n", ikey);
-		//fprintf(stderr, "Insert %s\n", key.c_str());
+    fprintf(stderr, "Locker %d Locked!\n", ikey);
     
     //printf("Lock Ok!\n");
     real_idx_ptr_t idx_ptr = GetIndex(ikey);
     int ret = idx_ptr->Insert(frame);
 
-		fprintf(stderr, "Locker %d ", ikey);
+    fprintf(stderr, "Locker %d ", ikey);
 
-		return ret;
+    return ret;
 }
 
 bool IndexLRU::DeleteFrame(frame_ptr_t &frame) {}
 
 int IndexLRU::HashFunc(const std::string &key) {
-		// just for test, 
-		//return 0;
-
     // it comes from the AP hash Function 
     // code copys from the website: www.byvoid.com/blog/string-hash-compare/
     unsigned int hash = 0;

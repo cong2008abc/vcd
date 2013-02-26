@@ -22,7 +22,10 @@ OM_LIB += vcd_file.o
 OM_LIB += thread_safe_index.o
 
 #for online test, only make for om lib!
-all: om
+#all: om
+
+#test sa
+all: detector test_sa 
 
 detector:
 	cd ./feature && make

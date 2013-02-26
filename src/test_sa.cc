@@ -1,5 +1,6 @@
 #include "utils.h"
-#include "feature/saliency.h"
+//#include "feature/saliency.h"
+#include "feature/img_saliency.h"
 #include "sa_cvpr_09.h"
 #include <stdio.h>
 #include <dirent.h>
@@ -13,6 +14,7 @@ const char *lib[] = {"/mnt/db/sample/",
 const int kMaxSize = 1024 * 1024 * 3;
 uint8 img_data[kMaxSize];
 
+/*
 void test(const char *path) {
     if (path == NULL) {
         fprintf(stderr, "Path Error!\n");
@@ -36,6 +38,7 @@ void test(const char *path) {
 
     delete [] result;
 }
+*/
 
 void test_cvpr(const char *path) {
     if (path == NULL) {
@@ -52,6 +55,29 @@ void test_cvpr(const char *path) {
     cvReleaseImage(&src);
 }
 
+void test_hc_method(const char *path) {
+    if (path == NULL) {
+        return ;
+    }
+
+    cv::Mat src = cv::imread(path);
+    if (!src.data) {
+        return;
+    }
+
+    show_mat(src);
+    printf("?ok!\n");
+    cv::Mat result;
+    vcd::Saliency::Get(src, result);
+    printf("ok!\n");
+
+    if (!result.data) {
+        return;
+    }
+
+    show_mat(result);
+}
+
 void test_dir(const char *path) {
     struct dirent **namelist;
     int file_num = scandir(path, &namelist, NULL, alphasort);
@@ -61,7 +87,7 @@ void test_dir(const char *path) {
         sprintf(full_name, "%s%s", path, namelist[i]->d_name);
         printf("%s\n", full_name);
 
-        test(full_name);
+        test_hc_method(full_name);
     }
 }
 
