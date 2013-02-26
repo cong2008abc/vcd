@@ -1,2 +1,3 @@
 vcd
-===
+
+video copy detect!
