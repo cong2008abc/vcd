@@ -7,7 +7,8 @@
 #include <highgui.h>
 
 const int LIB_NUM = 1;
-const char *lib[] = {"/mnt/db/sample/",
+const char *lib[] = {"../img/",
+                     "/mnt/db/sample/",
                      "/mnt/db/1/",
                      "/mnt/db/2/",
                      "/mnt/db/3/"};
@@ -66,10 +67,8 @@ void test_hc_method(const char *path) {
     }
 
     show_mat(src);
-    printf("?ok!\n");
     cv::Mat result;
     vcd::Saliency::Get(src, result);
-    printf("ok!\n");
 
     if (!result.data) {
         return;
