@@ -69,6 +69,7 @@ void test_hc_method(const char *path) {
     show_mat(src);
     cv::Mat result;
     vcd::Saliency::Get(src, result);
+    vcd::Saliency::Evaluate(result, result);
 
     if (!result.data) {
         return;

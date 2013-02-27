@@ -1,4 +1,5 @@
 #include "img_saliency.h"
+#include "define.h"
 #include <cv.h>
 #include <highgui.h>
 #include <vector>
@@ -33,12 +34,86 @@ inline void operator /= (cv::Vec<T1, 3> &v1, T2 v2) {
     v1[2] /= v2;
 }
 
+template<class T>
+inline double get_factor_a(T x, T a, T u) {
+    if (x <= u) {
+        return 0.0f;
+    } else if (x >= a) {
+        return 1.0f;
+    } else {
+        return (x - u) / (double)(a - u);
+    }
+}
+
+template<class T>
+inline double get_factor_u(T x, T a, T u) {
+    if (x <= u) {
+        return 1.0f;
+    } else if (x >= a) {
+        return 0.0f;
+    } else {
+        return (x - a) / (double)(u - a);
+    }
+}
+
+template<class T>
+inline T _abs(T x) {
+    return x > 0 ? x : -x;
+}
+
 bool Saliency::Get(const cv::Mat &src, cv::Mat &result) {
     cv::Mat sal, img3f;
     src.convertTo(img3f, CV_32FC3, 1.0 / 255);
     sal = GetHC(img3f);
 
-    result = sal;
+    sal.convertTo(result, CV_8U, 255);
+//    sal.convertTo(sal, CV_8U);
+//    unsigned char *ptr = (unsigned char*)(sal.data);
+//    for (int i = 0; i < 10; ++i) {
+//        printf("%d\n", ptr[i]);
+//    }
+
+    return true;
+}
+
+bool Saliency::Evaluate(const cv::Mat &src, cv::Mat &result) {
+    // here need val of src between [0, 255]
+    cv::Mat img1d = src;   
+
+    const int kmaxval = 255;
+    int hist[kmaxval] = {0};
+    int n = img1d.rows * img1d.cols;
+    double proba[kmaxval] = {0.f};
+
+    uint8 *ptr = (uint8*)(img1d.data);
+    uint8 *end = ptr + n;
+    while (ptr < end) {
+        hist[*ptr]++;
+        ptr++;
+    }
+
+    int target_u, target_a, min_diff = 1000000.0f;
+    for (int u = 0; u <= kmaxval; ++u) {
+        for (int a = u + 1; a <= kmaxval; ++a) {     
+            double ha = 0.0f, hu = 0.0f;
+            double pb_a = GetProba(hist, kmaxval, a, u, get_factor_a);    
+            double pb_u = GetProba(hist, kmaxval, a, u, get_factor_u);    
+            for (int i = 0; i < kmaxval; ++i) {
+                ha += (hist[i] / pb_a) * log(hist[i] / pb_a);
+                hu += (hist[i] / pb_u) * log(hist[i] / pb_u);
+            }
+            printf("-- %f %f\n", pb_a, pb_u);
+
+            if (_abs(ha - hu) < min_diff) {
+                min_diff = _abs(ha - hu);
+                target_a = a;
+                target_u = u;
+            }
+        }
+    }
+
+    printf("?? result a:%d u:%d\n", target_a, target_u);
+
     return true;
 }
 
@@ -225,6 +300,16 @@ bool Saliency::SmoothSaliency(const cv::Mat &bin_color3f, cv::Mat &sal1d,
     }
 
     return true;
+}
+
+double Saliency::GetProba(const int *hist, const int kmaxval,
+                          int a, int u,
+                          double (*fun)(int, int, int)) {
+    double sum = 0;
+    for (int i = 0; i < kmaxval; ++i) {
+        sum += ((*fun)(i, a, u)) * hist[i];
+    }
+    return sum;
 }
 
 } // namespace vcd

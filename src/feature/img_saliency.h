@@ -16,7 +16,10 @@ class Saliency {
 public:
     // Get saliency map of the giving src img
     static bool Get(const cv::Mat &src, cv::Mat &result);
-    //static bool Evaluate(const std::string &src);
+
+    // input the saliency map and 
+    // return the extract result
+    static bool Evaluate(const cv::Mat &src, cv::Mat &result);
 
     static cv::Mat GetHC(const cv::Mat &img3f);
 
@@ -29,6 +32,9 @@ private:
     static bool SmoothSaliency(const cv::Mat &bin_color3f, cv::Mat &sal1d,
                                float delta,
                                const std::vector<std::vector<CostfIdx> > &similar);
+    static double GetProba(const int *hist, const int kmaxval,
+                           int a, int u,
+                           double (*fun)(int, int, int));
 };
 
 } // namespace vcd
