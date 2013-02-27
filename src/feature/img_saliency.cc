@@ -88,21 +88,22 @@ bool Saliency::Evaluate(const cv::Mat &src, cv::Mat &result) {
     uint8 *ptr = (uint8*)(img1d.data);
     uint8 *end = ptr + n;
     while (ptr < end) {
-        hist[*ptr]++;
-        ptr++;
+        hist[*ptr++]++;
     }
 
-    int target_u, target_a, min_diff = 1000000.0f;
+    int target_u, target_a;
+    double min_diff = 1000000.0f;
     for (int u = 0; u <= kmaxval; ++u) {
         for (int a = u + 1; a <= kmaxval; ++a) {     
             double ha = 0.0f, hu = 0.0f;
-            double pb_a = GetProba(hist, kmaxval, a, u, get_factor_a);    
-            double pb_u = GetProba(hist, kmaxval, a, u, get_factor_u);    
+            double pb_a = GetProba(hist, kmaxval, a, u, get_factor_a) + 0.000001f;    
+            double pb_u = GetProba(hist, kmaxval, a, u, get_factor_u) + 0.000001f;    
             for (int i = 0; i < kmaxval; ++i) {
                 ha += (hist[i] / pb_a) * log(hist[i] / pb_a);
                 hu += (hist[i] / pb_u) * log(hist[i] / pb_u);
             }
-            printf("-- %f %f\n", pb_a, pb_u);
+
+            //printf("--%d %d %f %f %f %f %f\n",u,a, pb_a, pb_u, ha, hu, _abs(ha - hu));
 
             if (_abs(ha - hu) < min_diff) {
                 min_diff = _abs(ha - hu);
@@ -112,7 +113,18 @@ bool Saliency::Evaluate(const cv::Mat &src, cv::Mat &result) {
         }
     }
 
-    printf("?? result a:%d u:%d\n", target_a, target_u);
+    printf("?? result a:%d u:%d min:%f\n", target_a, target_u, min_diff);
+
+    result = cv::Mat::zeros(src.size(), 8U);
+    int *res_ptr = (int*)(result.data);
+
+    // next steps
+    // 1) find the start points[need a)local maximum, b)belong to attended areas]
+    // 2) extend the area from the start points, follow blow:
+    //      c[i,j] < c[start_point] && c[i,j] > (a + u)/2
+    //
+    // the question is how to decide the start points.
+    // because it need to be the attended area.
 
     return true;
 }
