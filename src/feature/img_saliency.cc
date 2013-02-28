@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <map>
+#include <assert.h>
 
 namespace vcd {
 
@@ -77,6 +78,7 @@ bool Saliency::Get(const cv::Mat &src, cv::Mat &result) {
 }
 
 bool Saliency::Evaluate(const cv::Mat &src, cv::Mat &result) {
+    return ExtractView(src, result);
     // here need val of src between [0, 255]
     cv::Mat img1d = src;   
 
@@ -322,6 +324,124 @@ double Saliency::GetProba(const int *hist, const int kmaxval,
         sum += ((*fun)(i, a, u)) * hist[i];
     }
     return sum;
+}
+
+bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
+    const cv::Mat *src = &_src;
+    const float delta = 2.5f;
+
+    //int n = src->cols * src->rows;
+    int n = src->cols * src->rows;
+    uint8 *ptr_sal = (uint8*)(src->data);
+
+    printf("ok\n");
+    // calc the sum of all the saliency map
+    uint8 *t = ptr_sal;
+    int loop = n;
+    uint64 CM = 0;
+    while (loop--) {
+        CM += *t++;
+    //    printf("%d\n", CM);
+    }
+
+    printf("??ok, %lld\n", CM);
+
+    // precalc the sum of the cols and rows,
+    int *sum_cols = new int[src->cols];
+    int *sum_rows = new int[src->rows];
+    for (int i = 0; i < src->rows; ++i) {
+        int tmp = 0;
+        for (int j = 0; j < src->cols; ++j) {
+            tmp += ptr_sal[i * src->cols + j];
+        }
+        sum_rows[i] = tmp;
+    }
+    for (int j = 0; j < src->cols; ++j) {
+        int tmp = 0;
+        for (int i = 0; i < src->rows; ++i) {
+            tmp += ptr_sal[i * src->cols + j];
+        }
+        sum_cols[j] = tmp;
+    }
+
+    // calc x0 and y0
+    uint64 _x0 = 0, _y0 = 0;
+    int x0 = 0, y0 = 0;
+    for (int i = 0; i < src->rows; ++i) {
+        _y0 += sum_rows[i] * (i + 1);
+        //printf("???%llx %d\n", _y0, sum_rows[i]);
+    }
+    for (int j = 0; j < src->cols; ++j) {
+        _x0 += sum_cols[j] * (j + 1);
+    }
+    y0 = static_cast<int>(_y0 / CM - 1);
+    x0 = static_cast<int>(_x0 / CM - 1);
+
+    cv::Mat _rows = cv::Mat::zeros(1, src->rows, CV_32F);
+    cv::Mat _cols = cv::Mat::zeros(1, src->cols, CV_32F);
+    for (int i = 0; i < src->cols; ++i) {
+        _rows = _rows + src->col(i);
+    }
+    for (int i = 0; i < src->rows; ++i) {
+        _cols = _cols + src->row(i);
+    }
+
+    printf("%d %d %d %d\n", src->rows,src->cols, x0, y0);
+    assert(x0 >= 0 && x0 < src->cols);
+    assert(y0 >= 0 && y0 < src->rows);
+
+    uint64 _w_sum = 0, _h_sum = 0;
+    for (int i = 0; i < src->rows; ++i) {
+        _h_sum += sum_rows[i] * _abs(i - y0);
+    }
+    for (int j = 0; j < src->cols; ++j) {
+        _w_sum += sum_cols[j] * _abs(j - x0);
+    }
+
+    int w = 2 * delta * static_cast<int>(_w_sum / CM);
+    int h = 2 * delta * static_cast<int>(_h_sum / CM);
+
+    printf("--result x0:%d y0:%d w:%d h:%d\n", x0, y0, w, h);
+
+    /*
+     * do by opencv functions!
+     */
+    cv::Mat _rows = cv::Mat::zeros(1, src->rows, CV_32F);
+    cv::Mat _cols = cv::Mat::zeros(1, src->cols, CV_32F);
+    for (int i = 0; i < src->cols; ++i) {
+        _rows = _rows + src->col(i) * (i + 1);
+    }
+    for (int i = 0; i < src->rows; ++i) {
+        _cols = _cols + src->row(i) * (i + 1);
+    }
+
+    // draw the rectangle
+    result = _src;
+    int left = x0 - w / 2;
+    int top = y0 - h / 2;
+    int right = x0 + w / 2;
+    int bottom = y0 + h / 2;
+    printf(">>%d %d %d %d\n", left, top, right, bottom);
+
+    left = left < 0 ? 0 : left;
+    top = top < 0 ? 0 : top;
+    right = right >= result.cols ? result.cols - 1 : right;
+    bottom = bottom >= result.rows ? result.rows - 1 : bottom;
+
+    uint8 *ptr_res = (uint8*)(result.data);
+    for (int i = top; i < bottom; ++i) {
+        ptr_res[i * result.cols + left] = 255; 
+        ptr_res[i * result.cols + right] = 255;
+    }
+    for (int i = left; i < right; ++i) {
+        ptr_res[top * result.cols + i] = 255;
+        ptr_res[bottom * result.cols + i] = 255;
+    }
+
+    delete [] sum_cols;
+    delete [] sum_rows;
+
+    return true;
 }
 
 } // namespace vcd

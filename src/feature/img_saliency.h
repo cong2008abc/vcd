@@ -35,6 +35,8 @@ private:
     static double GetProba(const int *hist, const int kmaxval,
                            int a, int u,
                            double (*fun)(int, int, int));
+
+    static bool ExtractView(const cv::Mat&, cv::Mat&);
 };
 
 } // namespace vcd
