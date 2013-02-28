@@ -1,10 +1,12 @@
+DEBUG = y
+
 CC = g++
 MAKE = make
-CFLAGS = -fPIC `pkg-config --libs opencv --cflags opencv`
+CFLAGS = -fPIC `pkg-config --cflags opencv`
 CFLAGS += -Wall
+LDFLAGS = `pkg-config --libs opencv`
 
 # whether debug
-DEBUG = y
 ifeq ($(DEBUG), y)
 	CFLAGS += -g
 else
@@ -12,9 +14,9 @@ else
 endif
 
 SUBDIRS := base feature
-LIBS := base/libbase.a feature/libfeature.a
+LIBS := base/libbase.a feature/libfeature.a lib/libgtest.a
 
-LDFLAGS = $(LIBS)
+LDFLAGS += $(LIBS)
 
 #target = run_test_sa
 
@@ -29,7 +31,7 @@ target: $(OBJS)
 	for dir in $(SUBDIRS);\
 	do $(MAKE) -C $$dir all || exit 1;\
 	done
-	$(CC) -o run_test_sa $(CFLAGS) $(OBJS) $(LIBS)
+	$(CC) -o run_test_sa $(CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS)
 
 %.o: %.cc
 	$(CC) $(CFLAGS) -c $<

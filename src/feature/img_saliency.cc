@@ -329,13 +329,12 @@ double Saliency::GetProba(const int *hist, const int kmaxval,
 
 bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
     const cv::Mat *src = &_src;
-    const float delta = 2.5f;
+    const float delta = 1.9f;
 
     //int n = src->cols * src->rows;
     int n = src->cols * src->rows;
     uint8 *ptr_sal = (uint8*)(src->data);
 
-    printf("ok\n");
     // calc the sum of all the saliency map
     uint8 *t = ptr_sal;
     int loop = n;
