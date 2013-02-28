@@ -1,33 +1,39 @@
-cc = g++
+# in order to generate base library
+# By ZhouChao(zhouchao@ict.ac.cn)
+
 AR = ar
+ARFLAGS = cr
+LIB = libfeature.a
+RM = rm -rf
+SRCS = color_hist.cc feature.cc img_saliency.cc om.cc \
+	   saliency.cc
+HEADS = *.h
+OBJS = $(subst .cc,.o, $(SRCS))
 
-FLAG = -fPIC
-FLAG += `pkg-config --libs opencv --cflags opencv`
+ROOT_DIR=..
+INCLUDE = -I$(ROOT_DIR) -I$(ROOT_DIR)/third_party
 
-TEST = feature.o
-TEST += om.o
-TEST += color_hist.o
-TEST += saliency.o
-TEST += img_saliency.o
+CC = g++
+CFLAGS = -fPIC `pkg-config --cflags opencv`
+CFLAGS += -D__DEBUG__
+CFLAGS += -Wall
+LDFLAGS = -lpthread
 
-main: lib static
+all: $(LIB)
 
-lib: $(TEST)
-	$(cc) -shared -o libfeature.so $(FLAG) $(TEST)
+#$(AR) $(ARFLAGS) $(CFLAGS) $(LDFLAGS) $@ $(OBJS)
+$(LIB):$(OBJS)
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 
-static: $(TEST)
-	$(AR) -cvr libfeature.a $(TEST)	
+#$(OBJS):$(SRCS) $(HEADS)
+#	$(CC) $(CFLAGS) -c $^ $(INCLUDE)
 
-feature.o: feature.cc
-	$(cc) $(FLAG) -c $<
-om.o: om.cc
-	$(cc) $(FLAG) -c $<
-color_hist.o: color_hist.cc
-	$(cc) $(FLAG) -c $<
-saliency.o: saliency.cc
-	$(cc) $(FLAG) -c $<
-img_saliency.o: img_saliency.cc
-	$(cc) $(FLAG) -c $<
+#include $(SRCS:.cc=.d)
+
+%.o: %.cc
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm $(TEST) libfeature.so
+	$(RM) $(OBJS) $(LIB)
+
+.PHONY: all clean

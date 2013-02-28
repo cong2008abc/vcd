@@ -139,6 +139,7 @@ enum { DEBUG_MODE = 1 };
     }                                                                   \
   } while (0)
 
+/*
 #define CHECK_EQ(val1, val2) CHECK_OP(==, val1, val2)
 #define CHECK_NE(val1, val2) CHECK_OP(!=, val1, val2)
 #define CHECK_LE(val1, val2) CHECK_OP(<=, val1, val2)
@@ -186,7 +187,7 @@ enum { DEBUG_MODE = 1 };
 #define DCHECK_GE(val1, val2)  CHECK_GE(val1, val2)
 #define DCHECK_GT(val1, val2)  CHECK_GT(val1, val2)
 #endif
-
+*/
 
 #ifdef ERROR
 #undef ERROR      // may conflict with ERROR macro on windows

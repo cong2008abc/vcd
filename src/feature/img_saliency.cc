@@ -1,5 +1,6 @@
 #include "img_saliency.h"
 #include "define.h"
+#include <stdio.h>
 #include <cv.h>
 #include <highgui.h>
 #include <vector>
@@ -366,7 +367,7 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
 
     // calc x0 and y0
     uint64 _x0 = 0, _y0 = 0;
-    int x0 = 0, y0 = 0;
+    int x0 = 1, y0 = 0;
     for (int i = 0; i < src->rows; ++i) {
         _y0 += sum_rows[i] * (i + 1);
         //printf("???%llx %d\n", _y0, sum_rows[i]);
@@ -376,15 +377,6 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
     }
     y0 = static_cast<int>(_y0 / CM - 1);
     x0 = static_cast<int>(_x0 / CM - 1);
-
-    cv::Mat _rows = cv::Mat::zeros(1, src->rows, CV_32F);
-    cv::Mat _cols = cv::Mat::zeros(1, src->cols, CV_32F);
-    for (int i = 0; i < src->cols; ++i) {
-        _rows = _rows + src->col(i);
-    }
-    for (int i = 0; i < src->rows; ++i) {
-        _cols = _cols + src->row(i);
-    }
 
     printf("%d %d %d %d\n", src->rows,src->cols, x0, y0);
     assert(x0 >= 0 && x0 < src->cols);
@@ -406,14 +398,14 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
     /*
      * do by opencv functions!
      */
-    cv::Mat _rows = cv::Mat::zeros(1, src->rows, CV_32F);
-    cv::Mat _cols = cv::Mat::zeros(1, src->cols, CV_32F);
-    for (int i = 0; i < src->cols; ++i) {
-        _rows = _rows + src->col(i) * (i + 1);
-    }
-    for (int i = 0; i < src->rows; ++i) {
-        _cols = _cols + src->row(i) * (i + 1);
-    }
+//    cv::Mat _rows = cv::Mat::zeros(1, src->rows, CV_32F);
+//    cv::Mat _cols = cv::Mat::zeros(1, src->cols, CV_32F);
+//    for (int i = 0; i < src->cols; ++i) {
+//        _rows = _rows + src->col(i) * (i + 1);
+//    }
+//    for (int i = 0; i < src->rows; ++i) {
+//        _cols = _cols + src->row(i) * (i + 1);
+//    }
 
     // draw the rectangle
     result = _src;

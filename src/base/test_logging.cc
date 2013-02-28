@@ -2,8 +2,8 @@
 #include "gtest/gtest.h"
 
 TEST(logging, print) {
-    VLOG(1, "%s", "stupid person!\n");
-    VLOG(1, "%d\n", 2);
+    VLOG(0, "%s", "stupid person!\n");
+    VLOG(0, "%d\n", 2);
 }
 
 int main(int argc, char **argv) {
