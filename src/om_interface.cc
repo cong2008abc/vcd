@@ -13,7 +13,6 @@ vcd::VcdFile *omf_file;
 char path[128];
 int global_jpg_idx;
 std::map<const std::string, int> *str2idx;
-//pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 const char *YUV = "/yuv/";
 const char *DB = "/db/";
@@ -86,16 +85,11 @@ int query_image(unsigned char *data, int w, int h) {
     vcd::Frame *frame = new vcd::Frame();
     frame->ExtractFeature(data, w, h);
 
-    //printf("Extract OK!\n");
     if (frame_index->InsertThreadSafe(frame) == 0) {
-        //v_file->AppendFrame(frame);
         omf_file->Append(frame->GetOMStr());
     } else {
         delete frame;
     }
-    //pthread_mutex_lock(&lock);
-    //v_file->AppendFrame(frame);
-    //pthread_mutex_unlock(&lock);
     
     return 0;
 }

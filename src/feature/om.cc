@@ -286,12 +286,12 @@ inline int check_edge(const int *sample, const int len) {
 
 void get_edge(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &ph) {
     //== remove the margin
-    int yValue = 0;
+//    int yValue = 0;
     int lineNum = 0;
     uint8 bCont = 1;
     const uint8 *pPoint = NULL;
-    int widthStep = (w) / (CHECK_POINT - 1) - 1;
-    int heightStep = (h) / (CHECK_POINT - 1) - 1;
+//    int widthStep = (w) / (CHECK_POINT - 1) - 1;
+//    int heightStep = (h) / (CHECK_POINT - 1) - 1;
 
     //int sample[CHECK_POINT];
     int tmpLen = w > h ? w : h;
@@ -302,7 +302,7 @@ void get_edge(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &p
     //== 1.1 top
     printf("top:\n");
     for (lineNum = 0; bCont && lineNum < h / 4; lineNum += STEP_SIZE) {
-        yValue = 0;
+//        yValue = 0;
         for (int i = 0; i < w; i++) {
             pPoint = data + lineNum * w + i;
             sample[i] = pPoint[0];
@@ -317,7 +317,7 @@ void get_edge(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &p
     printf("bottom:\n");
     for (bCont = 1, lineNum = h - 1; bCont && lineNum > 3 * h / 4;
             lineNum -= STEP_SIZE) {
-        yValue = 0;
+//        yValue = 0;
         for (int i = 0; i < w; i++) {
             pPoint = data + lineNum * w + i;
             sample[i] = pPoint[0];
@@ -334,7 +334,7 @@ void get_edge(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &p
     printf("left:\n");
     for (bCont = 1, lineNum = 0; bCont && lineNum < w / 4;
             lineNum += STEP_SIZE) {
-        yValue = 0;
+//        yValue = 0;
         for (int i = hStart; i <= hEnd; i++) {
             pPoint = data + lineNum + i * w;
             sample[i] = pPoint[0];
@@ -349,7 +349,7 @@ void get_edge(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &p
     printf("right:\n");
     for (bCont = 1, lineNum = w - 1; bCont && lineNum > 3 * w / 4;
             lineNum -= STEP_SIZE) {
-        yValue = 0;
+//        yValue = 0;
         for (int i = hStart; i <= hEnd; i++) {
             pPoint = data + lineNum + i * w;
             sample[i] = pPoint[0];

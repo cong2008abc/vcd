@@ -49,7 +49,7 @@ bool Saliency::ExtractSaliency(const uint8 *data, const int w,
     }
     
     // count num of each color
-    for (uint32 i = 0; i < w * h; ++i) {
+    for (uint32 i = 0; i < static_cast<uint32>(w * h); ++i) {
         hist[ptr[i]]++;
     }
 
@@ -332,8 +332,8 @@ uint8 Saliency::GetDistance(uint8 a, uint8 b) {
 bool Saliency::IsMaxVal(const uint8 *data, const int w,
                         const int cw, const int ch, const int size) {
     const uint8 c_val = data[ch * w + cw];
-    for (uint32 j = ch - size; j <= ch + size; ++j) {
-        for (uint32 i = cw - size; i <= cw + size; ++i) {
+    for (int32 j = ch - size; j <= ch + size; ++j) {
+        for (int32 i = cw - size; i <= cw + size; ++i) {
             if (data[w * j + i] >= c_val &&
                 (i != cw || j != ch)) 
                 return false;

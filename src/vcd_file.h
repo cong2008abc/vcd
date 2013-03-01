@@ -31,8 +31,8 @@ private:
     char type_name_[16];
 
     uint64 max_size_;      // the max size of one vcd file
-    int save_size_;     // the size of data has writed into disk
-    int left_space_;    // the size of data in the memory
+    uint32 save_size_;     // the size of data has writed into disk
+    uint32 left_space_;    // the size of data in the memory
     char *cache_;
     FILE *pf_;
 

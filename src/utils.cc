@@ -161,7 +161,7 @@ bool load_image_with_color(const char *path, int &w, int &h, uint8 *data, int le
         goto fail;
     }
 
-succ:
+//succ:
     cvReleaseImage(&img);
     return true;
 
@@ -361,4 +361,13 @@ void show_yuv(const char *path) {
 
     cvReleaseImage(&img);
     delete [] data;
+}
+
+inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst) {
+    if (src.cols <= 640) {
+        dst = src;
+    } else {
+        float factor = 640 / (float)src.cols;
+        cv::resize(src, dst, cv::Size(), factor, factor);
+    }
 }

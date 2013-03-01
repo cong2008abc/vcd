@@ -86,7 +86,7 @@ bool Saliency::Evaluate(const cv::Mat &src, cv::Mat &result) {
     const int kmaxval = 255;
     int hist[kmaxval] = {0};
     int n = img1d.rows * img1d.cols;
-    double proba[kmaxval] = {0.f};
+    //double proba[kmaxval] = {0.f};
 
     uint8 *ptr = (uint8*)(img1d.data);
     uint8 *end = ptr + n;
@@ -119,7 +119,7 @@ bool Saliency::Evaluate(const cv::Mat &src, cv::Mat &result) {
     printf("?? result a:%d u:%d min:%f\n", target_a, target_u, min_diff);
 
     result = cv::Mat::zeros(src.size(), 8U);
-    int *res_ptr = (int*)(result.data);
+    //int *res_ptr = (int*)(result.data);
 
     // next steps
     // 1) find the start points[need a)local maximum, b)belong to attended areas]
@@ -216,7 +216,7 @@ int Saliency::Quantize(const cv::Mat &img3f, cv::Mat &idx1i, cv::Mat &_color3f,
     // Fine significant colors
     int maxNum = 0;
     {
-        int count = 0;
+        //int count = 0;
         std::vector<std::pair<int, int> > num; // (num, color) pairs in num
         num.reserve(pallet.size());
         for (std::map<int, int>::iterator it = pallet.begin(); it != pallet.end(); it++)
@@ -287,7 +287,7 @@ bool Saliency::SmoothSaliency(const cv::Mat &bin_color3f, cv::Mat &sal1d,
     }
     //cv::CV_Assert(bin_color3f.size() == sal1d.size() && sal1d.rows == 1);
     int nbin = bin_color3f.cols;
-    cv::Vec3f *color = (cv::Vec3f*)(bin_color3f.data);
+    //cv::Vec3f *color = (cv::Vec3f*)(bin_color3f.data);
     cv::Mat tmp_sal;
     sal1d.copyTo(tmp_sal);
     float *sal = (float*)(tmp_sal.data);

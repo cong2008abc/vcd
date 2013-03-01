@@ -1,12 +1,13 @@
 #include "utils.h"
 //#include "feature/saliency.h"
 #include "feature/img_saliency.h"
+#include "base/logging.h"
 #include "sa_cvpr_09.h"
 #include <stdio.h>
 #include <dirent.h>
 #include <highgui.h>
 
-const int LIB_NUM = 1;
+const int LIB_NUM = 2;
 const char *lib[] = {"../img/",
                      "/mnt/db/sample/",
                      "/mnt/db/1/",
@@ -61,10 +62,15 @@ void test_hc_method(const char *path) {
         return ;
     }
 
-    cv::Mat src = cv::imread(path);
-    if (!src.data) {
+    cv::Mat _src = cv::imread(path);
+    if (!_src.data) {
         return;
     }
+
+    cv::Mat src;
+    resize_mat_by_width(_src, src);
+
+    VLOG(0, "%d %d %d %d\n", _src.cols, _src.rows, src.cols, src.rows);
 
     show_mat(src);
     cv::Mat result;

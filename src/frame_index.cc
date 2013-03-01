@@ -120,6 +120,7 @@ int FrameIndexLRU::Insert(Frame *ptr) {
     return 0;
 }
 
-int FrameIndexLRU::Delete(Frame *frame) {}
-
+int FrameIndexLRU::Delete(Frame *frame) {
+    return 1;
+}
 } // namespace vcd

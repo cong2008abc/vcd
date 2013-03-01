@@ -24,3 +24,9 @@ run_*
 *.lai
 *.la
 *.a
+
+# third_party lib
+!libgtest.a
+
+# unused third_party
+src/third_party/sparsehash/

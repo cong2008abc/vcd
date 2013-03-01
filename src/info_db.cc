@@ -28,7 +28,7 @@ bool InfoDB::OpenDB(const char *db_file) {
         return false;
     }
 
-    int ret;
+    uint32 ret;
     // first read the last_idx;
     ret = fread(&_last_idx, sizeof(uint32), 1, pf);
     if (ret != 1) {

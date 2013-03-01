@@ -16,8 +16,7 @@ endif
 SUBDIRS := base feature
 LIBS := base/libbase.a feature/libfeature.a lib/libgtest.a
 
-LDFLAGS += $(LIBS)
-
+INCLUDE = -I.
 #target = run_test_sa
 
 SRCS = test_sa.cc feature_db.cc data_stream.cc \
@@ -34,7 +33,7 @@ target: $(OBJS)
 	$(CC) -o run_test_sa $(CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS)
 
 %.o: %.cc
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $< $(INCLUDE)
 
 RM = rm -rf
 clean:

@@ -69,6 +69,9 @@ float ImpOMFeature::Compare(const Feature *rf) {
     return ret_color > ret_entropy ? ret_entropy : ret_color;
 }
 
+/*
+ * this is compare method may be wrong!
+ */
 float ImpOMFeature::InterCompare(const uint8 *arr_a, const uint8 *arr_b) {
     uint8 s[ImpOMFeature::FEATURE_LEN], d[ImpOMFeature::FEATURE_LEN];
     int len = ImpOMFeature::FEATURE_LEN;
@@ -82,10 +85,10 @@ float ImpOMFeature::InterCompare(const uint8 *arr_a, const uint8 *arr_b) {
 
     int max = 0;
     for (int i = 0; i < len; ++i) {
-        int tmp = 0;
+        int tmp = i;
         for (int j  = 0; j <= i; j++) {
-            if (s[j] > i) tmp++;
-        }
+            if (d[j] <= i) tmp--;
+        } 
         if (tmp > max) {
             max = tmp;
         }
@@ -99,6 +102,7 @@ float ImpOMFeature::InterCompare(const uint8 *arr_a, const uint8 *arr_b) {
 
 bool ImpOMFeature::ExtractIndex(const uint8 *data, int *idx_a, int *idx_b) {
     //
+    return false;
 }
 
 

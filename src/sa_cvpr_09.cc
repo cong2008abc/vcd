@@ -7,6 +7,7 @@ const float PI = 3.14159;
 
 bool filter_gauss(IplImage *src, IplImage *dst) {
     cvSmooth(src, dst, CV_GAUSSIAN, 3);
+    return true;
 }
 
 bool cvpr09_saliency(IplImage *src) {
@@ -19,6 +20,8 @@ bool cvpr09_saliency(IplImage *src) {
     //int avg_val = avg.val[0];
     cvSubS(dst, avg, dst);
     show_image(dst, "cvpr09");
+
+    return true;
 }
 
 } // namespace vcd

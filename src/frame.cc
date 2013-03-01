@@ -45,6 +45,7 @@ bool Frame::ExtractFeature(const uint8 *data, int w, int h) {
     _str_hash_key += "\n";
 
     //std::cout << _str_hash_key << std::endl;
+    return true;
 }
 
 bool Frame::EqualOM(const Frame *ptr) {
@@ -72,6 +73,7 @@ bool Frame::EqualHist(const Frame *ptr) {
 bool Frame::DumpToFile(FILE *pf) {
 	const ColorHistFeature *ptr_color = dynamic_cast<const ColorHistFeature*>(_color_dt);
 	fwrite(ptr_color->_arr_hist, sizeof(float), ColorHistFeature::FEATURE_LEN, pf);	
+    return true;
 }
 
 uint64 Frame::GetHashKey() const{
@@ -84,6 +86,7 @@ const std::string& Frame::GetOMStr() const {
 
 bool Frame::SetKey(uint32 key) {
     _key = key;
+    return true;
 }
 
 uint32 Frame::GetKey() {

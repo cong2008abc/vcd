@@ -38,7 +38,7 @@ bool ColorHistFeature::ExtractFrame(const uint8 *data, int w, int h) {
             for (int y = i * sub_h; y < (i + 1) * sub_h; ++y) {
                 for (int x = j * sub_w; x < (j + 1) * sub_w; ++x) {
                     int val = data[y * h + x];
-                    count[val * HIST_NUM / 256]++;
+                    count[val * HIST_NUM / max_val]++;
                 }
             }
 
@@ -51,9 +51,13 @@ bool ColorHistFeature::ExtractFrame(const uint8 *data, int w, int h) {
     return true;
 }
 
-bool ColorHistFeature::DumpToFile(FILE *pf) {}
+bool ColorHistFeature::DumpToFile(FILE *pf) {
+    return false;
+}
 
-bool ColorHistFeature::ReadFromFile(FILE *pf) {}
+bool ColorHistFeature::ReadFromFile(FILE *pf) {
+    return false;
+}
 
 float ColorHistFeature::Compare(const Feature *rf) {
     const ColorHistFeature *ptr = dynamic_cast<const ColorHistFeature*>(rf);

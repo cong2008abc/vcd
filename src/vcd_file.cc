@@ -4,7 +4,7 @@
 
 namespace vcd {
 
-const int kCacheSize = 1024 * 32; // 32k cache
+const uint32 kCacheSize = 1024 * 32; // 32k cache
 // one file store 100M features
 
 VcdFile::VcdFile(const char *path, const char *type_name,
@@ -57,6 +57,7 @@ bool VcdFile::Append(const char *ptr, uint32 size) {
         fclose(pf_);
         pf_ = NULL;
     }
+    return true;
 }
 
 bool VcdFile::Append(const std::string &data) {
@@ -73,9 +74,10 @@ bool VcdFile::CopyToCache(const char *ptr, int len) {
     uint32 start_pos = kCacheSize - left_space_;
     strncpy(cache_ + start_pos, ptr, len);
     left_space_ -= len;
-		if (left_space_ == 0) {
-				Dump();
-		}
+    if (left_space_ == 0) {
+            Dump();
+    }
+    return true;
 }
 
 bool VcdFile::Dump() {

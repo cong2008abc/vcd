@@ -32,13 +32,15 @@ bool IndexLRU::InsertThreadSafe(frame_ptr_t &frame) {
     return ret;
 }
 
-bool IndexLRU::DeleteFrame(frame_ptr_t &frame) {}
+bool IndexLRU::DeleteFrame(frame_ptr_t &frame) {
+    return false;
+}
 
 int IndexLRU::HashFunc(const std::string &key) {
     // it comes from the AP hash Function 
     // code copys from the website: www.byvoid.com/blog/string-hash-compare/
     unsigned int hash = 0;
-    int i;
+    uint32 i;
     for (i = 0; i < key.size(); ++i) {
         if ((i & 1) == 0) {
             hash ^= ((hash << 7) ^ (key[i]) ^ (hash >> 3));

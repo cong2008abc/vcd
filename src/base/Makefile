@@ -5,7 +5,7 @@ AR = ar
 ARFLAGS = cr
 LIB = libbase.a
 RM = rm -rf
-OBJS = logging.o test_logging.o
+OBJS = logging.o 
 
 ROOT_DIR=..
 
