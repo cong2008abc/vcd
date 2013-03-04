@@ -48,11 +48,11 @@
 #ifndef BASE_COMMANDLINEFLAGS_H_
 #define BASE_COMMANDLINEFLAGS_H_
 
-#include <config.h>
 #include <string>
 #include <string.h>               // for memchr
 #include <stdlib.h>               // for getenv
-#include "base/basictypes.h"
+#include "basictypes.h"
+#include "config.h"
 
 #ifndef PERFTOOLS_DLL_DECL
 #define PERFTOOLS_DLL_DECL

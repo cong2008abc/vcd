@@ -3,12 +3,15 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <cv.h>
 
 const int LIB_NUM = 3;
-const char *lib[] = {"/mnt/db/1/",
+const char *lib[] = {"../img/",
+                     "/mnt/db/sample/",
+                     "/mnt/db/1/",
                      "/mnt/db/2/",
                      "/mnt/db/3/"};
-
+char db_path[] = "../test_om/";
 unsigned char *img_data;
 int kMaxSize;
 
@@ -22,7 +25,7 @@ void test_dir(const char *path) {
         printf("%s\n", full_name);
 
         int w, h;
-        if (!load_jpg_image(full_name, w, h, img_data, kMaxSize)) {
+        if (!simulate_input(full_name, img_data, kMaxSize, &w, &h)) {
             continue;
         }
 
@@ -32,7 +35,7 @@ void test_dir(const char *path) {
 }
 
 int main() {
-    open_db("../test_om/"); 
+    open_db(db_path); 
     kMaxSize = 1024 * 1024 * 3;
     img_data = new unsigned char[kMaxSize];
 

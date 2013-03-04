@@ -1,7 +1,7 @@
 #ifndef _DEFINE_H_
 #define _DEFINE_H_
 
-#include "feature/define.h"
+//#include "feature/define.h"
 
 namespace vcd {
 

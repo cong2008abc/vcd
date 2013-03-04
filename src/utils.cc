@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "base/logging.h"
 
 #include <stdio.h>
 #include <highgui.h>
@@ -118,6 +119,20 @@ bool load_jpg_image(const char *path, int &w, int &h, uint8 *data, int len) {
         cvReleaseImage(&comY);
     }
     cvReleaseImage(&img);
+
+    /*
+     * test imread
+     */
+//    cv::Mat mt_img = cv::imread(path);
+//    VLOG(0, "mat dims: %d", mt_img.dims);
+//    //fprintf(stdout, "mat dims: %d\n", mt_img.dims);
+//    mt_img.convertTo(mt_img, CV_8U);
+//    cv::cvtColor(mt_img, mt_img, CV_BGR2YUV);
+//    uint8 *data_ptr = (uint8*)(mt_img.data);
+//    int i = 0;
+//    while (i++ < mt_img.cols * mt_img.rows * mt_img.dims) {
+//        *data++ =*data_ptr++;
+//    }
 
     return true;
 }
@@ -363,11 +378,51 @@ void show_yuv(const char *path) {
     delete [] data;
 }
 
-inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst) {
-    if (src.cols <= 640) {
-        dst = src;
-    } else {
-        float factor = 640 / (float)src.cols;
-        cv::resize(src, dst, cv::Size(), factor, factor);
+bool simulate_input(const char *path, uint8 *data, int kMaxImageSize,
+                    int *w, int *h) {
+    IplImage *src = cvLoadImage(path);
+    if (src == NULL || src->nChannels != 3) {
+        VLOG(-1, "Need Color Image");
+        return false;
     }
+
+    IplImage *yuv_image = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U,
+                                   src->nChannels);
+    IplImage *comp_yy = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
+    IplImage *comp_uu = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
+    IplImage *comp_vv = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
+
+    cvCvtColor(src, yuv_image, CV_BGR2YUV);
+    cvSplit(yuv_image, comp_yy, comp_uu, comp_vv, NULL);
+
+    IplImage *comp_u = cvCreateImage(cvSize(src->width / 2, src->height / 2),
+                                IPL_DEPTH_8U, 1);
+    IplImage *comp_v = cvCreateImage(cvSize(src->width / 2, src->height / 2),
+                                IPL_DEPTH_8U, 1);
+    cvResize(comp_uu, comp_u);
+    cvResize(comp_vv, comp_v);
+
+//    show_image(comp_yy, "yy");
+//    show_image(comp_u, "u");
+//    show_image(comp_v, "v");
+    
+    if (src->width * src->height * 3/2 >= kMaxImageSize) {
+        return false;
+    }
+    if (w != NULL) *w = src->width;
+    if (h != NULL) *h = src->height;
+
+    iplImage2uint8point(comp_yy, data);
+    iplImage2uint8point(comp_u, data + src->width * src->height);
+    iplImage2uint8point(comp_v, data + static_cast<int>(src->width * src->height * 1.25));
+
+    cvReleaseImage(&src);
+    cvReleaseImage(&yuv_image);
+    cvReleaseImage(&comp_yy);
+    cvReleaseImage(&comp_uu);
+    cvReleaseImage(&comp_vv);
+    cvReleaseImage(&comp_u);
+    cvReleaseImage(&comp_v);
+
+    return true;
 }

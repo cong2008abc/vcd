@@ -5,8 +5,8 @@ AR = ar
 ARFLAGS = cr
 LIB = libfeature.a
 RM = rm -rf
-SRCS = color_hist.cc feature.cc img_saliency.cc om.cc \
-	   saliency.cc
+SRCS = color_hist.cc feature.cc img_saliency.cc om.cc 
+
 HEADS = *.h
 OBJS = $(subst .cc,.o, $(SRCS))
 
@@ -31,7 +31,7 @@ $(LIB):$(OBJS)
 #include $(SRCS:.cc=.d)
 
 %.o: %.cc
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $< $(INCLUDE)
 
 clean:
 	$(RM) $(OBJS) $(LIB)

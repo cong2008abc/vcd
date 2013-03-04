@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cv.h>
 
 //#define N 100 
 //#define N2 8 
@@ -11,6 +12,8 @@
 
 int N = 25;
 //int N2 = 8;
+
+// the threshold of the entropy of the valid image
 const float ENTROPY_THRESHOLD = 3.5;
 
 struct position{
@@ -18,6 +21,7 @@ struct position{
     float val;
 };
 
+// function of compare the position struct
 int cmp(const void *pa, const void *pb) {
     position *posA = (position *)pa;
     position *posB = (position *)pb;
@@ -25,6 +29,7 @@ int cmp(const void *pa, const void *pb) {
     return posA->val > posB->val;
 }
 
+// convert the position struct to the feature
 bool pos2result(const position *pos, uint8 *result, int len) {
     for (int i = 0; i < len; ++i) {
         result[pos[i].idx] = static_cast<uint8>(i);
@@ -32,43 +37,12 @@ bool pos2result(const position *pos, uint8 *result, int len) {
     return true;
 }
 
-void get_rect_feature(const uint8 *data, int w, int h, 
-        int x, int y, int rw, int rh, float *avg, float *entropy) {
-    const int nbox = 64; 
-    //int *num = new int[nbox];
-    int num[nbox];
-    int sum = 0;
-    for (int i = 0; i < nbox; i++) {
-        num[i] = 0;
-    }
-
-    for (int i = y; i < y + rh; i++) {
-        for (int j = x; j < x + rw; j++) {
-            assert(i < h && j < w);
-            int val = data[i * w + j];
-            num[val * nbox / 256]++;
-            sum += val;
-        }
-    }
-
-    int total = rw * rh;
-    float val = 0.0; 
-    for (int i = 0; i < nbox; i++) {
-        float per = num[i] / (float)total;
-        val += -1 * per * log(per + 0.000001);
-    }
-
-    //delete [] num;
-    
-    *avg = (float)sum / (rw * rh);
-    *entropy = val;
-}
-
 void get_rect_avg(const uint8 *data, int w, int h,
         int x, int y, int rw, int rh, float *avg) {
     int sum = 0;
     for (int i = y; i < y + rh; i++) {
         for (int j = x; j < x + rw; j++) {
+    //        printf("%s %d, %d %d %d %d\n", __FILE__, __LINE__, w, y, i, j);
             assert(i < h && j < w);
             sum += data[i * w + j];
         }
@@ -127,8 +101,6 @@ inline int check_edge2(const int *sample, const int len) {
 
     for (int i = 0; i < len - 1; i++) {
         assert(sample[i] >= 0);
-//      printf("%d %d\t", sample[i], sample[i] * nClrBin / 255);
-//      if (i % 6 == 0) printf("\n");
         clrBin[sample[i] * nClrBin / 255]++;
         bin[(sample[i + 1] - sample[i] + 255) * nBin / 510]++;
     }
@@ -187,7 +159,6 @@ void get_edge2(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &
         int k;
         for (k = 0; k < h; k++) {
             const uint8 *point = data + w * k + line;
-            //sample[k] = point[0] - point[1] + 255;
             sample[k] = point[0];
         } 
         left = line;
@@ -243,14 +214,12 @@ void get_edge2(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &
     pw = right - left + 1;
     ph = bottom - top + 1;
     //show_edge_image(data, w, h, left, right, top, bottom);
+
+    delete [] sample;
 }
 
 inline int check_edge(int value) {
     int avg = value / (3 * (CHECK_POINT + 1));
-    //printf("avg : %d\n", avg);
-//  if (avg > TH_LUMA || avg < 256 - TH_LUMA) {
-//      return 1;
-//  }
     if (avg > TH_LUMA) {
         return 1;
     }
@@ -265,7 +234,6 @@ inline int check_edge(const int *sample, const int len) {
         bin[i] = 0;
 
     for (int i = 0; i < len; i++) {
-//      printf("%d ", sample[i]);
         bin[sample[i] * binSize / 255]++;
     }
 
@@ -284,134 +252,15 @@ inline int check_edge(const int *sample, const int len) {
     return 1;
 }
 
-void get_edge(const uint8 *data, int w, int h, int &sw, int &sh, int &pw, int &ph) {
-    //== remove the margin
-//    int yValue = 0;
-    int lineNum = 0;
-    uint8 bCont = 1;
-    const uint8 *pPoint = NULL;
-//    int widthStep = (w) / (CHECK_POINT - 1) - 1;
-//    int heightStep = (h) / (CHECK_POINT - 1) - 1;
-
-    //int sample[CHECK_POINT];
-    int tmpLen = w > h ? w : h;
-    int *sample = new int[tmpLen];
-
-    int top = 0, bottom = h - 1, left = 0, right = w - 1;
-
-    //== 1.1 top
-    printf("top:\n");
-    for (lineNum = 0; bCont && lineNum < h / 4; lineNum += STEP_SIZE) {
-//        yValue = 0;
-        for (int i = 0; i < w; i++) {
-            pPoint = data + lineNum * w + i;
-            sample[i] = pPoint[0];
-        }
-        if (check_edge(sample, w)) {
-            bCont = 0;
-        }
-        top = lineNum;
-    }
-
-    //== 1.2 bottom
-    printf("bottom:\n");
-    for (bCont = 1, lineNum = h - 1; bCont && lineNum > 3 * h / 4;
-            lineNum -= STEP_SIZE) {
-//        yValue = 0;
-        for (int i = 0; i < w; i++) {
-            pPoint = data + lineNum * w + i;
-            sample[i] = pPoint[0];
-        }
-        if (check_edge(sample, w)) {
-            bCont = 0;
-        }
-        bottom = lineNum;
-    }
-
-    int hStart = 0;
-    int hEnd = h - 1;
-    //== 1.3 left
-    printf("left:\n");
-    for (bCont = 1, lineNum = 0; bCont && lineNum < w / 4;
-            lineNum += STEP_SIZE) {
-//        yValue = 0;
-        for (int i = hStart; i <= hEnd; i++) {
-            pPoint = data + lineNum + i * w;
-            sample[i] = pPoint[0];
-        }
-        if (check_edge(sample, hEnd - hStart + 1)) {
-            bCont = 0;
-        }
-        left = lineNum;
-    }
-
-    //== 1.4 right
-    printf("right:\n");
-    for (bCont = 1, lineNum = w - 1; bCont && lineNum > 3 * w / 4;
-            lineNum -= STEP_SIZE) {
-//        yValue = 0;
-        for (int i = hStart; i <= hEnd; i++) {
-            pPoint = data + lineNum + i * w;
-            sample[i] = pPoint[0];
-        }
-        if (check_edge(sample, hEnd - hStart + 1)) {
-            bCont = 0;
-        }
-        right = lineNum;
-    }
-
-    sw = left;
-    sh = top;
-    pw = right - left + 1;
-    ph = bottom - top + 1;
-
-    printf("width: %d height: %d\n", w, h);
-    printf("top: %d bottom: %d left: %d right: %d\n",
-            top, bottom, left, right);
-
-//    IplImage *ptr = yuv2iplImage(data, w, h);
-//    cvRectangle(ptr, cvPoint(left, top), cvPoint(right, bottom), cvScalar(0, 255, 0));
-//    show_image(ptr, "rect");
 //
-//    cvReleaseImage(&ptr);
-}
-
-int check_image_entropy(const uint8 *data, int w, int h) {
-    int sw, sh, pw, ph;
-    get_edge(data, w, h, sw, sh, pw, ph);
-
-    const int box = 256;
-    int num[box];
-
-    for (int i = 0; i < box; i++)
-        num[i] = 0;
-
-    //printf("\n%d %d %d\n", pw, ph, pw * ph);
-
-    for (int i = sh; i < sh + ph; i++) {
-        for (int j = sw; j < sw + pw; j++)
-            num[data[i * w + j] * box / 256]++;
-    }
-
-    float sum = 0;
-    int total = pw * ph;
-
-    for (int i = 0; i < box; i++) {
-        //printf(" %d", num[i]);
-        float per = (float)num[i] / (float)total;    
-        sum += -1.0 * per * log(per + 0.000001);
-    }
-
-
-    if (sum < ENTROPY_THRESHOLD) {
-        printf("%.3f\n", sum);
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int check_image_entropy(const uint8 *data, int w, int h, int sw, int sh, int pw, int ph) {
+// check the entropy of the center of the image
+// @data    the input image
+// @w       the width
+// @h       the height
+// @sw,@wh  the top and left of the center of the image
+//
+int check_image_entropy(const uint8 *data, int w, int h,
+                        int sw, int sh, int pw, int ph) {
     const int box = 256;
     int num[box];
 
@@ -441,20 +290,41 @@ int check_image_entropy(const uint8 *data, int w, int h, int sw, int sh, int pw,
     }
 }
 
+// check the entropy of the full image
+int check_image_entropy(const uint8 *data, int w, int h) {
+    return check_image_entropy(data, w, h, 0, 0, w, h);
+}
+
 void get_real_feature(const uint8 *data, int w, int h, int N2,
         uint8 *orderAvg, uint8 *orderEnt) {
+    int sw = 0, sh = 0, pw = w, ph = h;
+    get_edge2(data, w, h, sw, sh, pw, ph);
+    cv::Rect rect(sw, sh, pw, ph);
+    get_real_feature(data, w, h, cv::Rect(sw, sh, pw, ph), N2,
+                     orderAvg, orderEnt);
+}
+
+void get_real_feature(const uint8 *data, int w, int h,
+                      cv::Rect view, int N2,
+                      uint8 *orderAvg, uint8 *orderEnt) {
     /*
      * we only use the middle center area of the image
      *  ____________
      *  | _______  |
      *  | |      | |
-     *  | |      | |
+     *  | |center| |
      *  | |______| |
      *  |__________|
      */
 
     int sw = 0, sh = 0, pw = w, ph = h;
-    get_edge2(data, w, h, sw, sh, pw, ph);
+    sw = view.x;
+    sh = view.y;
+    pw = view.width;
+    ph = view.height;
+    //printf("check center: %d %d %d %d %d %d\n", w, h, sw, sh, pw, ph);
+    assert(sw >= 0 && sw + pw <= w);
+    assert(sh >= 0 && sh + ph <= h);
 
     int subw = pw / N2;
     int subh = ph / N2;
@@ -468,6 +338,9 @@ void get_real_feature(const uint8 *data, int w, int h, int N2,
     int idx = 0;
     for (int i = 0; i < N2; i++) {
         for (int j = 0; j < N2; j++) {
+            // divide the image and calc feature of 
+            // each block
+            
             int leftX = j * subw + sw;
             int leftY = i * subh + sh;
 

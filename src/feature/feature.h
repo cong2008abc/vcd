@@ -2,6 +2,7 @@
 #define _FEATURE_H_
 
 #include <stdio.h>
+#include <cv.h>
 
 namespace vcd {
 
@@ -28,6 +29,9 @@ public:
     
     int GetKeyId();
     int SetKeyId(int key_id);
+
+protected:
+    virtual bool CvtYUV2BGR(const uint8 *, int, int, IplImage*);
 
 private:
     unsigned int _feature_id;

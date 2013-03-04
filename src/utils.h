@@ -39,8 +39,8 @@ inline void show_mat(const cv::Mat &pic) {
     cv::waitKey(0);
 }
 
-inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst) {
-    const int kmaxcols = 480;
+inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst, int max_width = 480) {
+    const int kmaxcols = max_width;
     if (src.cols <= kmaxcols) {
         dst = src;
     } else {
@@ -48,4 +48,9 @@ inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst) {
         cv::resize(src, dst, cv::Size(), factor, factor);
     }
 }
+
+bool load_img_by_mat(const char *, uint8*, int);
+
+bool simulate_input(const char *, uint8*, int, int*, int*);
+    
 #endif

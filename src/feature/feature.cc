@@ -1,7 +1,10 @@
 #include "feature.h"
 #include "om.h"
+#include "img_saliency.h"
+#include "utils.h"
 #include <stdlib.h>
 #include <math.h>
+#include <cv.h>
 
 namespace vcd {
 
@@ -15,6 +18,36 @@ int Feature::GetKeyId() {
 int Feature::SetKeyId(int key_id) {
     _feature_id = key_id;
     return 1;
+}
+
+bool Feature::CvtYUV2BGR(const uint8 *data_, int w, int h,
+                         IplImage *rgb) {
+    IplImage *y = cvCreateImageHeader(cvSize(w, h), IPL_DEPTH_8U, 1); 
+    IplImage *u = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1); 
+    IplImage *v = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1); 
+
+    IplImage *hu = cvCreateImageHeader(cvSize(w/2, h/2), IPL_DEPTH_8U, 1); 
+    IplImage *hv = cvCreateImageHeader(cvSize(w/2, h/2), IPL_DEPTH_8U, 1); 
+
+    uint8 *data = const_cast<uint8*>(data_);
+    cvSetData(y, data, w);
+//    show_image(y, "y");
+    cvSetData(hu, data + w * h, w / 2);
+    cvSetData(hv, data + static_cast<int>(w * h * 1.25), w / 2);
+
+    cvResize(hu, u, CV_INTER_LINEAR);
+    cvResize(hv, v, CV_INTER_LINEAR);
+
+    cvMerge(y, u, v, NULL, rgb);
+    cvCvtColor(rgb, rgb, CV_YUV2BGR);
+
+    cvReleaseImage(&u);
+    cvReleaseImage(&v);
+    cvReleaseImageHeader(&y);
+    cvReleaseImageHeader(&hu);
+    cvReleaseImageHeader(&hv);
+
+    return true;
 }
 
 
@@ -38,8 +71,23 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h) {
     
     int n = static_cast<int>(sqrt(ImpOMFeature::FEATURE_LEN));
 
+    printf("ok\n");
+    IplImage *rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+    if (CvtYUV2BGR(data, w, h, rgb) == false) {
+        return false;
+    }
+//    show_image(rgb, "rgb");
+//    show_yuv(data, w, h);
+
+    cv::Mat mat = rgb;
+    cv::Rect rect;
+    cv::Mat saliency_map;
+    Saliency::Get(mat, saliency_map);    
+    Saliency::ExtractView(saliency_map, rect);
+
     get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
 
+    cvReleaseImage(&rgb);
     return true;
 }
 

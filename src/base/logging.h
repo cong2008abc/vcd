@@ -45,7 +45,7 @@
 #include <string.h>    // for strlen(), strcmp()
 #include <assert.h>
 #include <errno.h>     // for errno
-#include "base/commandlineflags.h"
+#include "commandlineflags.h"
 
 // On some systems (like freebsd), we can't call write() at all in a
 // global constructor, perhaps because errno hasn't been set up.
@@ -53,14 +53,7 @@
 // Calling the write syscall is safer (it doesn't set errno), so we
 // prefer that.  Note we don't care about errno for logging: we just
 // do logging on a best-effort basis.
-#if defined(_MSC_VER)
-#define WRITE_TO_STDERR(buf, len) WriteToStderr(buf, len);  // in port.cc
-#elif defined(HAVE_SYS_SYSCALL_H)
-#include <sys/syscall.h>
-#define WRITE_TO_STDERR(buf, len) syscall(SYS_write, STDERR_FILENO, buf, len)
-#else
-#define WRITE_TO_STDERR(buf, len) write(STDERR_FILENO, buf, len)
-#endif
+#define WRITE_TO_STDERR(buf, len) write(2, buf, len)
 
 // MSVC and mingw define their own, safe version of vnsprintf (the
 // windows one in broken) in port.cc.  Everyone else can use the
@@ -204,6 +197,7 @@ inline void LogPrintf(int severity, const char* pat, va_list ap) {
     assert(strlen(buf)+1 < sizeof(buf));
     strcat(buf, "\n");
   }
+  //printf("%s", buf);
   WRITE_TO_STDERR(buf, strlen(buf));
   if ((severity) == FATAL)
     abort(); // LOG(FATAL) indicates a big problem, so don't run atexit() calls

@@ -3,10 +3,14 @@
 
 //#include <pair>
 #include <vector>
+#include <cv.h>
 
 namespace cv {
     class Mat;
 };
+
+// declare the CvRect struct
+struct CvRect;
 
 namespace vcd {
 
@@ -25,6 +29,10 @@ public:
 
     static int Quantize(const cv::Mat &img3f, cv::Mat &idx1i, cv::Mat &_color3f,
                         cv::Mat &_color_num, double ratio = 0.95);
+
+    // extract a rectangle area from the input image
+    // this rectange contains the main content of the image
+    static bool ExtractView(const cv::Mat&, cv::Rect&);
 
 private:
     static bool GetHC(const cv::Mat &bin_color3f, const cv::Mat &weights1f,

@@ -69,17 +69,13 @@ bool Saliency::Get(const cv::Mat &src, cv::Mat &result) {
     sal = GetHC(img3f);
 
     sal.convertTo(result, CV_8U, 255);
-//    sal.convertTo(sal, CV_8U);
-//    unsigned char *ptr = (unsigned char*)(sal.data);
-//    for (int i = 0; i < 10; ++i) {
-//        printf("%d\n", ptr[i]);
-//    }
 
     return true;
 }
 
 bool Saliency::Evaluate(const cv::Mat &src, cv::Mat &result) {
     return ExtractView(src, result);
+
     // here need val of src between [0, 255]
     cv::Mat img1d = src;   
 
@@ -328,6 +324,38 @@ double Saliency::GetProba(const int *hist, const int kmaxval,
 }
 
 bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
+    cv::Rect view;
+    if (ExtractView(_src, view) == false) {
+        return false; 
+    }
+
+    // draw the rectangle
+    result = _src;
+    int left = view.x;
+    int top = view.y;
+    int right = view.x + view.width;
+    int bottom = view.y + view.height;
+    printf(">>%d %d %d %d\n", left, top, right, bottom);
+
+    left = left < 0 ? 0 : left;
+    top = top < 0 ? 0 : top;
+    right = right >= result.cols ? result.cols - 1 : right;
+    bottom = bottom >= result.rows ? result.rows - 1 : bottom;
+
+    uint8 *ptr_res = (uint8*)(result.data);
+    for (int i = top; i < bottom; ++i) {
+        ptr_res[i * result.cols + left] = 255; 
+        ptr_res[i * result.cols + right] = 255;
+    }
+    for (int i = left; i < right; ++i) {
+        ptr_res[top * result.cols + i] = 255;
+        ptr_res[bottom * result.cols + i] = 255;
+    }
+
+    return true;
+}
+
+bool Saliency::ExtractView(const cv::Mat &_src, cv::Rect &view) {
     const cv::Mat *src = &_src;
     const float delta = 1.9f;
 
@@ -341,10 +369,7 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
     uint64 CM = 0;
     while (loop--) {
         CM += *t++;
-    //    printf("%d\n", CM);
     }
-
-    printf("??ok, %lld\n", CM);
 
     // precalc the sum of the cols and rows,
     int *sum_cols = new int[src->cols];
@@ -369,7 +394,6 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
     int x0 = 1, y0 = 0;
     for (int i = 0; i < src->rows; ++i) {
         _y0 += sum_rows[i] * (i + 1);
-        //printf("???%llx %d\n", _y0, sum_rows[i]);
     }
     for (int j = 0; j < src->cols; ++j) {
         _x0 += sum_cols[j] * (j + 1);
@@ -377,7 +401,7 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
     y0 = static_cast<int>(_y0 / CM - 1);
     x0 = static_cast<int>(_x0 / CM - 1);
 
-    printf("%d %d %d %d\n", src->rows,src->cols, x0, y0);
+    //printf("%d %d %d %d\n", src->rows,src->cols, x0, y0);
     assert(x0 >= 0 && x0 < src->cols);
     assert(y0 >= 0 && y0 < src->rows);
 
@@ -394,6 +418,11 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
 
     printf("--result x0:%d y0:%d w:%d h:%d\n", x0, y0, w, h);
 
+    view.x = x0 - w / 2;
+    view.y = y0 - h / 2;
+    view.width = w;
+    view.height = h;
+
     /*
      * do by opencv functions!
      */
@@ -405,29 +434,6 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
 //    for (int i = 0; i < src->rows; ++i) {
 //        _cols = _cols + src->row(i) * (i + 1);
 //    }
-
-    // draw the rectangle
-    result = _src;
-    int left = x0 - w / 2;
-    int top = y0 - h / 2;
-    int right = x0 + w / 2;
-    int bottom = y0 + h / 2;
-    printf(">>%d %d %d %d\n", left, top, right, bottom);
-
-    left = left < 0 ? 0 : left;
-    top = top < 0 ? 0 : top;
-    right = right >= result.cols ? result.cols - 1 : right;
-    bottom = bottom >= result.rows ? result.rows - 1 : bottom;
-
-    uint8 *ptr_res = (uint8*)(result.data);
-    for (int i = top; i < bottom; ++i) {
-        ptr_res[i * result.cols + left] = 255; 
-        ptr_res[i * result.cols + right] = 255;
-    }
-    for (int i = left; i < right; ++i) {
-        ptr_res[top * result.cols + i] = 255;
-        ptr_res[bottom * result.cols + i] = 255;
-    }
 
     delete [] sum_cols;
     delete [] sum_rows;

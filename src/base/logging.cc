@@ -34,7 +34,7 @@
 #include "base/logging.h"
 #include "base/commandlineflags.h"
 
-DEFINE_int32(verbose, EnvToInt("PERFTOOLS_VERBOSE", 0),
+DEFINE_int32(verbose, EnvToInt("PERFTOOLS_VERBOSE", 2),
              "Set to numbers >0 for more verbose output, or <0 for less.  "
              "--verbose == -4 means we log fatal errors only.");
 
