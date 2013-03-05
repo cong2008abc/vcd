@@ -51,6 +51,6 @@ target: $(OBJS)
 RM = rm -rf
 clean:
 	@for dir in $(SUBDIRS); do $(MAKE) -C $$dir clean || exit 1; done
-	$(RM) $(OBJS) $(target)
+	$(RM) $(OBJS) $(target) run_test*
 
 .PHONY: all clean sublib

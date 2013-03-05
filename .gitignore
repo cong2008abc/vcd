@@ -30,3 +30,6 @@ run_*
 
 # unused third_party
 src/third_party/sparsehash/
+
+# unittest exec
+unittest_*

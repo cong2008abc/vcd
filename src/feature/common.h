@@ -31,6 +31,11 @@ inline void operator /= (cv::Vec<T1, 3> &v1, T2 v2) {
 }
 
 template<class T>
+inline T pntSqrDist(const cv::Point_<T> &p1, const cv::Point_<T> &p2) {
+    return sqr(p1.x - p2.x) + sqr(p1.y - p2.y);
+}
+
+template<class T>
 inline double get_factor_a(T x, T a, T u) {
     if (x <= u) {
         return 0.0f;

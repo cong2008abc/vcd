@@ -19,8 +19,12 @@ CFLAGS = -fPIC `pkg-config --cflags opencv`
 CFLAGS += -g
 CFLAGS += -Wall
 LDFLAGS = -lpthread
+LDFLAGS_TEST = -L$(ROOT_DIR)/lib -lgtest -L$(ROOT_DIR)/base -lbase \
+			   `pkg-config --libs opencv`
 
-all: $(LIB)
+UNITTEST = unittest_om
+
+all: $(LIB) $(UNITTEST)
 
 #$(AR) $(ARFLAGS) $(CFLAGS) $(LDFLAGS) $@ $(OBJS)
 $(LIB):$(OBJS)
@@ -34,7 +38,10 @@ $(LIB):$(OBJS)
 %.o: %.cc
 	$(CC) $(CFLAGS) -c $< $(INCLUDE)
 
+unittest_om: unittest_om.o $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB) $(LDFLAGS_TEST)
+
 clean:
-	$(RM) $(OBJS) $(LIB)
+	$(RM) $(OBJS) $(LIB) *.o
 
 .PHONY: all clean

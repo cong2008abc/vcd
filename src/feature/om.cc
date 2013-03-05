@@ -1,4 +1,5 @@
 #include "om.h"
+#include "base/logging.h"
 #include <stdio.h>
 #include <algorithm>
 #include <cassert>
@@ -75,6 +76,103 @@ void get_rect_entropy(const uint8 *data, int w, int h,
     }
 
     *entropy = val;
+}
+
+const double k_ent_thres = 2.0;
+const int k_n_border_split = 5;
+
+// 
+// in order to judge a border whether is a margin, need to calc 
+// the entropy of the border. but the logo also appear in the 
+// margin. if calc the whole entropy, the logo will make the 
+// entropy large and get the wrong decision.
+// so divide the border into n parts. and cacl entropy of each one.
+// because the logo only appear in one or two(logo also is small).
+// if entropy of k(k > n/2) parts is ok, can get this border is a margin. 
+//
+// input:
+//      @row    must be 1 * n matrix
+// ouput:
+//      bool    true if in margin
+//
+bool check_border(const cv::Mat &row) {
+    if (row.rows != 1) {
+        VLOG(0, "check border error. must be 1*n");
+        return false;
+    }
+
+    int each_size = row.cols / k_n_border_split;
+    int ok = 0;
+    float dev[k_n_border_split];
+    for (int i = 0; i < k_n_border_split; ++i) {
+        cv::Mat roi(row, cv::Rect(each_size * i, 0, each_size, 1));
+        cv::Scalar std_dev, m; 
+        cv::meanStdDev(roi, m, std_dev);
+        if (std_dev.val[0] < k_ent_thres) {
+            ok++;
+        }
+        dev[i] = std_dev.val[0];
+    }
+    //VLOG(1, "%d %f %f %f %f %f\n", ok, dev[0], dev[1], dev[2], dev[3], dev[4]);
+    if (ok > k_n_border_split / 2) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void remove_margin(const cv::Mat &data, cv::Rect *res) {
+    int top, bottom, left, right;
+    int i;
+    
+    // 1= find the top
+    int top_upper = data.rows / 4;
+    for (i = 0; i < top_upper; ++i) {
+        cv::Mat row = data.row(i);
+        if (check_border(row) == false) {
+            break;
+        }
+    }
+    top = i;
+
+    // 2= find the bottom
+    int bottom_upper = data.rows * 3 / 4;
+    for (i = data.rows - 1; i > bottom_upper; --i) {
+        cv::Mat row = data.row(i);
+        if (check_border(row) == false) {
+            break;
+        }
+    }
+    bottom = i;
+
+    // 3= find the left
+    int left_upper = data.cols / 4;
+    for (i = 0; i < left_upper; ++i) {
+        cv::Mat col = data.col(i);
+        cv::Mat row = col.t();
+        if (check_border(row) == false) {
+            break;
+        }
+    }
+    left = i;
+
+    // 3= find the right
+    int right_upper = data.cols * 3 / 4;
+    for (i = data.cols - 1; i > right_upper; --i) {
+        cv::Mat col = data.col(i);
+        cv::Mat row = col.t();
+        if (check_border(row) == false) {
+            break;
+        }
+    }
+    right = i;
+
+    VLOG(1, "%d %d %d %d", left, top, right, bottom);
+
+    res->x = left;
+    res->y = top;
+    res->width = right - left + 1;
+    res->height = bottom - top + 1;
 }
 
 #define STEP_SIZE 2

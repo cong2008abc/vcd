@@ -1,4 +1,5 @@
 #include "img_saliency.h"
+#include "segment_image.h"
 #include "define.h"
 #include "common.h"
 #include <stdio.h>
@@ -11,10 +12,16 @@
 
 namespace vcd {
 
-bool Saliency::Get(const cv::Mat &src, cv::Mat &result) {
+const Saliency::GET_SAL_FUNC Saliency::gfuns[SAL_TYPE_NUM] = {
+        GetHC, GetRC, NULL, NULL, NULL};
+
+bool Saliency::Get(const cv::Mat &src, cv::Mat &result, int method) {
+    if (method >= SAL_TYPE_NUM) {
+        return false;
+    }
     cv::Mat sal, img3f;
     src.convertTo(img3f, CV_32FC3, 1.0 / 255);
-    sal = GetHC(img3f);
+    sal = gfuns[method](img3f);
 
     sal.convertTo(result, CV_8U, 255);
 
@@ -98,6 +105,94 @@ cv::Mat Saliency::GetHC(const cv::Mat &img3f) {
 
     return sal_HC1f;
 }
+
+cv::Mat Saliency::GetRC(const cv::Mat &img3f) {
+	return GetRC(img3f, 0.4, 50, 50, 0.5);
+}
+
+cv::Mat Saliency::GetRC(const cv::Mat &img3f, double sigmaDist,
+                            double segK, int segMinSize, double segSigma) {
+	cv::Mat regIdx1i, colorIdx1i, regSal1v, tmp, _img3f, color3fv;
+	if (Quantize(img3f, colorIdx1i, color3fv, tmp) <= 2) // Color quantization
+		return cv::Mat::zeros(img3f.size(), CV_32F);
+	cvtColor(img3f, _img3f, CV_BGR2Lab);
+	cvtColor(color3fv, color3fv, CV_BGR2Lab);
+	int regNum = SegmentImage(_img3f, regIdx1i, segSigma, segK, segMinSize);	
+    std::vector<Region> regs(regNum);
+	BuildRegions(regIdx1i, regs, colorIdx1i, color3fv.cols);
+	RegionContrast(regs, color3fv, regSal1v, sigmaDist);
+
+	cv::Mat sal1f = cv::Mat::zeros(img3f.size(), CV_32F);
+	cv::normalize(regSal1v, regSal1v, 0, 1, cv::NORM_MINMAX, CV_32F);
+	float* regSal = (float*)regSal1v.data;
+	for (int r = 0; r < img3f.rows; r++){
+		const int* regIdx = regIdx1i.ptr<int>(r);
+		float* sal = sal1f.ptr<float>(r);
+		for (int c = 0; c < img3f.cols; c++)
+			sal[c] = regSal[regIdx[c]];
+	}
+	GaussianBlur(sal1f, sal1f, cv::Size(3, 3), 0);
+	return sal1f;
+}
+
+
+void Saliency::BuildRegions(const cv::Mat& regIdx1i, std::vector<Region> &regs,
+                            const cv::Mat &colorIdx1i, int colorNum) {
+	int rows = regIdx1i.rows, cols = regIdx1i.cols, regNum = (int)regs.size();
+	cv::Mat_<int> regColorFre1i = cv::Mat_<int>::zeros(regNum, colorNum); // region color frequency
+	for (int y = 0; y < rows; y++){
+		const int *regIdx = regIdx1i.ptr<int>(y);
+		const int *colorIdx = colorIdx1i.ptr<int>(y);
+		for (int x = 0; x < cols; x++, regIdx++, colorIdx++){
+			Region &reg = regs[*regIdx];
+			reg.pixNum ++;
+			reg.centroid.x += x;
+			reg.centroid.y += y;
+			regColorFre1i(*regIdx, *colorIdx)++;
+		}
+	}
+
+	for (int i = 0; i < regNum; i++){
+		Region &reg = regs[i];
+		reg.centroid.x /= reg.pixNum * cols;
+		reg.centroid.y /= reg.pixNum * rows;
+		int *regColorFre = regColorFre1i.ptr<int>(i);
+		for (int j = 0; j < colorNum; j++){
+			float fre = (float)regColorFre[j]/(float)reg.pixNum;
+			if (regColorFre[j])
+				reg.freIdx.push_back(std::make_pair(fre, j));
+		}
+	}
+}
+
+void Saliency::RegionContrast(const std::vector<Region> &regs, const cv::Mat &color3fv,
+                              cv::Mat& regSal1d, double sigmaDist) {	
+	cv::Mat_<float> cDistCache1f = cv::Mat::zeros(color3fv.cols, color3fv.cols, CV_32F);{
+		cv::Vec3f* pColor = (cv::Vec3f*)color3fv.data;
+		for(int i = 0; i < cDistCache1f.rows; i++)
+			for(int j= i+1; j < cDistCache1f.cols; j++)
+				cDistCache1f[i][j] = cDistCache1f[j][i] = vecDist3(pColor[i], pColor[j]);
+	}
+
+	int regNum = (int)regs.size();
+	cv::Mat_<double> rDistCache1d = cv::Mat::zeros(regNum, regNum, CV_64F);
+	regSal1d = cv::Mat::zeros(1, regNum, CV_64F);
+	double* regSal = (double*)regSal1d.data;
+	for (int i = 0; i < regNum; i++){
+		for (int j = 0; j < regNum; j++){
+			if(i<j) {
+				double dd = 0;
+				const std::vector<CostfIdx> &c1 = regs[i].freIdx, &c2 = regs[j].freIdx;
+				for (size_t m = 0; m < c1.size(); m++)
+					for (size_t n = 0; n < c2.size(); n++)
+						dd += cDistCache1f[c1[m].second][c2[n].second] * c1[m].first * c2[n].first;
+				rDistCache1d[j][i] = rDistCache1d[i][j] = dd * exp(-pntSqrDist(regs[i].centroid, regs[j].centroid)/sigmaDist); 
+			}
+			regSal[i] += regs[j].pixNum * rDistCache1d[i][j];
+		}
+	}
+}
+
 
 bool Saliency::GetHC(const cv::Mat &bin_color3f, const cv::Mat &weight1f,
                      cv::Mat &_color_sal) {
