@@ -31,7 +31,6 @@ bool Feature::CvtYUV2BGR(const uint8 *data_, int w, int h,
 
     uint8 *data = const_cast<uint8*>(data_);
     cvSetData(y, data, w);
-//    show_image(y, "y");
     cvSetData(hu, data + w * h, w / 2);
     cvSetData(hv, data + static_cast<int>(w * h * 1.25), w / 2);
 
@@ -51,7 +50,6 @@ bool Feature::CvtYUV2BGR(const uint8 *data_, int w, int h,
 }
 
 
-
 /*
  * implement ImproveOMFeature class
  */
@@ -66,26 +64,33 @@ ImpOMFeature::~ImpOMFeature() {
 }
 
 bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h) {
-    _arr_color = new uint8[ImpOMFeature::FEATURE_LEN];
-    //_arr_entropy = new uint8[ImpOMFeature::FEATURE_LEN];
-    
-    int n = static_cast<int>(sqrt(ImpOMFeature::FEATURE_LEN));
+    return ExtractFrame(data, w, h, 4);
+}
 
-    printf("ok\n");
+bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
+    _arr_color = new uint8[n * n];
+    //_arr_entropy = NULL;
+    _arr_entropy = new uint8[n * n];
+    
+    // 1= cvt the yuv data to rgb
     IplImage *rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
     if (CvtYUV2BGR(data, w, h, rgb) == false) {
         return false;
     }
-//    show_image(rgb, "rgb");
-//    show_yuv(data, w, h);
 
+    // 2= extract the main rectangle on rgb image
     cv::Mat mat = rgb;
     cv::Rect rect;
     cv::Mat saliency_map;
     Saliency::Get(mat, saliency_map);    
     Saliency::ExtractView(saliency_map, rect);
+    
+    //Saliency::Evaluate(saliency_map, saliency_map);
+//    show_mat(saliency_map);
+//    show_yuv(data, w, h);
 
-    get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
+    // 3= extract om feature on yuv data
+    get_real_feature(data, w, h, rect, n, _arr_color, _arr_entropy);
 
     cvReleaseImage(&rgb);
     return true;

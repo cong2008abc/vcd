@@ -5,7 +5,8 @@ AR = ar
 ARFLAGS = cr
 LIB = libfeature.a
 RM = rm -rf
-SRCS = color_hist.cc feature.cc img_saliency.cc om.cc 
+SRCS = color_hist.cc feature.cc img_saliency.cc om.cc \
+	   segment_image.cc
 
 HEADS = *.h
 OBJS = $(subst .cc,.o, $(SRCS))
@@ -15,7 +16,7 @@ INCLUDE = -I$(ROOT_DIR) -I$(ROOT_DIR)/third_party
 
 CC = g++
 CFLAGS = -fPIC `pkg-config --cflags opencv`
-CFLAGS += -D__DEBUG__
+CFLAGS += -g
 CFLAGS += -Wall
 LDFLAGS = -lpthread
 
