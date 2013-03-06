@@ -103,7 +103,7 @@ bool check_border(const cv::Mat &row) {
 
     int each_size = row.cols / k_n_border_split;
     int ok = 0;
-    float dev[k_n_border_split];
+    //float dev[k_n_border_split];
     for (int i = 0; i < k_n_border_split; ++i) {
         cv::Mat roi(row, cv::Rect(each_size * i, 0, each_size, 1));
         cv::Scalar std_dev, m; 
@@ -111,7 +111,7 @@ bool check_border(const cv::Mat &row) {
         if (std_dev.val[0] < k_ent_thres) {
             ok++;
         }
-        dev[i] = std_dev.val[0];
+    //    dev[i] = std_dev.val[0];
     }
     //VLOG(1, "%d %f %f %f %f %f\n", ok, dev[0], dev[1], dev[2], dev[3], dev[4]);
     if (ok > k_n_border_split / 2) {
@@ -125,8 +125,11 @@ void remove_margin(const cv::Mat &data, cv::Rect *res) {
     int top, bottom, left, right;
     int i;
     
+    int max_margin_row = data.rows / 8;
+    int max_margin_col = data.cols / 8;
+    
     // 1= find the top
-    int top_upper = data.rows / 4;
+    int top_upper = max_margin_row;
     for (i = 0; i < top_upper; ++i) {
         cv::Mat row = data.row(i);
         if (check_border(row) == false) {
@@ -136,7 +139,7 @@ void remove_margin(const cv::Mat &data, cv::Rect *res) {
     top = i;
 
     // 2= find the bottom
-    int bottom_upper = data.rows * 3 / 4;
+    int bottom_upper = data.rows - max_margin_row;
     for (i = data.rows - 1; i > bottom_upper; --i) {
         cv::Mat row = data.row(i);
         if (check_border(row) == false) {
@@ -146,7 +149,7 @@ void remove_margin(const cv::Mat &data, cv::Rect *res) {
     bottom = i;
 
     // 3= find the left
-    int left_upper = data.cols / 4;
+    int left_upper = max_margin_col;
     for (i = 0; i < left_upper; ++i) {
         cv::Mat col = data.col(i);
         cv::Mat row = col.t();
@@ -157,7 +160,7 @@ void remove_margin(const cv::Mat &data, cv::Rect *res) {
     left = i;
 
     // 3= find the right
-    int right_upper = data.cols * 3 / 4;
+    int right_upper = data.cols - max_margin_col;
     for (i = data.cols - 1; i > right_upper; --i) {
         cv::Mat col = data.col(i);
         cv::Mat row = col.t();

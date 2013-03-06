@@ -1,4 +1,4 @@
-METHOD = 2
+METHOD = 1
 DEBUG = y
 
 CC = g++

@@ -73,18 +73,25 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     _arr_entropy = new uint8[n * n];
     
     // 1= cvt the yuv data to rgb
-    IplImage *rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
-    if (CvtYUV2BGR(data, w, h, rgb) == false) {
+    IplImage *img_rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+    if (CvtYUV2BGR(data, w, h, img_rgb) == false) {
         return false;
     }
 
+    cv::Mat img = img_rgb;
+    cv::Rect margin;
+    remove_margin(img, &margin);
+
     // 2= extract the main rectangle on rgb image
-    cv::Mat mat = rgb;
+    cv::Mat roi(img, margin);
     cv::Rect rect;
     cv::Mat saliency_map;
-    Saliency::Get(mat, saliency_map);    
+    Saliency::Get(roi, saliency_map);    
     Saliency::ExtractView(saliency_map, rect);
     
+//    show_mat(roi);
+//    cv::rectangle(saliency_map, rect, cv::Scalar(255));
+//    show_mat(saliency_map);
     //Saliency::Evaluate(saliency_map, saliency_map);
 //    show_mat(saliency_map);
 //    show_yuv(data, w, h);
@@ -92,7 +99,7 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     // 3= extract om feature on yuv data
     get_real_feature(data, w, h, rect, n, _arr_color, _arr_entropy);
 
-    cvReleaseImage(&rgb);
+    cvReleaseImage(&img_rgb);
     return true;
 }
 

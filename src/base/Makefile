@@ -5,7 +5,7 @@ AR = ar
 ARFLAGS = cr
 LIB = libbase.a
 RM = rm -rf
-OBJS = logging.o 
+OBJS = logging.o vcd_dir.o
 
 ROOT_DIR=..
 
@@ -16,15 +16,24 @@ CFLAGS = -fPIC
 
 SRCS = $(subst .o,.cc, $(OBJS))
 
-all: $(LIB)
+UNITTEST = unittest_vcddir
+LDFLAGS_TEST = -L../lib -lgtest -lpthread
 
-$(OBJS):$(SRCS)
-	$(CC) $(CFLAGS) -c $^ $(INCLUDE)
+all: $(LIB) $(UNITTEST)
+
+#$(OBJS):$(SRCS)
+#	$(CC) $(CFLAGS) -c $^ $(INCLUDE)
+
+%.o: %.cc
+	$(CC) $(CFLAGS) -c $< $(INCLUDE)
 
 $(LIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
+unittest_vcddir: unittest_vcddir.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB) $(LDFLAGS_TEST)
+
 clean:
-	$(RM) $(OBJS) $(LIB)
+	$(RM) $(OBJS) $(LIB) $(UNITTEST) *.o
 
 .PHONY: all clean
