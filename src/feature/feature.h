@@ -31,8 +31,7 @@ public:
     int SetKeyId(int key_id);
 
 protected:
-    virtual bool CvtYUV2BGR(const uint8 *, int, int, IplImage*);
-
+    //
 private:
     unsigned int _feature_id;
 };

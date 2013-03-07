@@ -26,7 +26,8 @@ run_*
 *.a
 
 # third_party lib
-!libgtest.a
+# don't change this lib. it's a x64 version
+libgtest.a
 
 # unused third_party
 src/third_party/sparsehash/

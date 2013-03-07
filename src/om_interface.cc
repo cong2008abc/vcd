@@ -61,7 +61,7 @@ int open_db(char *db_path) {
 		char log[128];
 		strcpy(log, db_path);
 		strcat(log, "om.log");
-		freopen(log, "w", stderr);
+//		freopen(log, "w", stderr);
 
     frame_index = new vcd::IndexLRU(1024u * 500);
     strcpy(path, db_path);

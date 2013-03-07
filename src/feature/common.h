@@ -1,6 +1,7 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include "define.h"
 #include <vector>
 #include <cv.h>
 
@@ -61,5 +62,15 @@ template<class T>
 inline T _abs(T x) {
     return x > 0 ? x : -x;
 }
+
+namespace vcd {
+
+int get_ipl_data(const IplImage *src, int nChannel, uint8 *data);
+
+bool cvt_YUV2RGB(const uint8 *data, int w, int h, IplImage *rgb);
+
+bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h);
+
+} // namespace vcd
 
 #endif

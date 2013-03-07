@@ -1,5 +1,6 @@
 #include "feature.h"
 #include "om.h"
+#include "common.h"
 #include "img_saliency.h"
 #include "utils.h"
 #include <stdlib.h>
@@ -19,36 +20,6 @@ int Feature::SetKeyId(int key_id) {
     _feature_id = key_id;
     return 1;
 }
-
-bool Feature::CvtYUV2BGR(const uint8 *data_, int w, int h,
-                         IplImage *rgb) {
-    IplImage *y = cvCreateImageHeader(cvSize(w, h), IPL_DEPTH_8U, 1); 
-    IplImage *u = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1); 
-    IplImage *v = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1); 
-
-    IplImage *hu = cvCreateImageHeader(cvSize(w/2, h/2), IPL_DEPTH_8U, 1); 
-    IplImage *hv = cvCreateImageHeader(cvSize(w/2, h/2), IPL_DEPTH_8U, 1); 
-
-    uint8 *data = const_cast<uint8*>(data_);
-    cvSetData(y, data, w);
-    cvSetData(hu, data + w * h, w / 2);
-    cvSetData(hv, data + static_cast<int>(w * h * 1.25), w / 2);
-
-    cvResize(hu, u, CV_INTER_LINEAR);
-    cvResize(hv, v, CV_INTER_LINEAR);
-
-    cvMerge(y, u, v, NULL, rgb);
-    cvCvtColor(rgb, rgb, CV_YUV2BGR);
-
-    cvReleaseImage(&u);
-    cvReleaseImage(&v);
-    cvReleaseImageHeader(&y);
-    cvReleaseImageHeader(&hu);
-    cvReleaseImageHeader(&hv);
-
-    return true;
-}
-
 
 /*
  * implement ImproveOMFeature class
@@ -74,7 +45,7 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     
     // 1= cvt the yuv data to rgb
     IplImage *img_rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
-    if (CvtYUV2BGR(data, w, h, img_rgb) == false) {
+    if (cvt_YUV2RGB(data, w, h, img_rgb) == false) {
         return false;
     }
 

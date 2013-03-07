@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "base/logging.h"
+#include "feature/common.h"
 
 #include <stdio.h>
 #include <highgui.h>
@@ -385,44 +386,6 @@ bool simulate_input(const char *path, uint8 *data, int kMaxImageSize,
         VLOG(-1, "Need Color Image");
         return false;
     }
-
-    IplImage *yuv_image = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U,
-                                   src->nChannels);
-    IplImage *comp_yy = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
-    IplImage *comp_uu = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
-    IplImage *comp_vv = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
-
-    cvCvtColor(src, yuv_image, CV_BGR2YUV);
-    cvSplit(yuv_image, comp_yy, comp_uu, comp_vv, NULL);
-
-    IplImage *comp_u = cvCreateImage(cvSize(src->width / 2, src->height / 2),
-                                IPL_DEPTH_8U, 1);
-    IplImage *comp_v = cvCreateImage(cvSize(src->width / 2, src->height / 2),
-                                IPL_DEPTH_8U, 1);
-    cvResize(comp_uu, comp_u);
-    cvResize(comp_vv, comp_v);
-
-//    show_image(comp_yy, "yy");
-//    show_image(comp_u, "u");
-//    show_image(comp_v, "v");
     
-    if (src->width * src->height * 3/2 >= kMaxImageSize) {
-        return false;
-    }
-    if (w != NULL) *w = src->width;
-    if (h != NULL) *h = src->height;
-
-    iplImage2uint8point(comp_yy, data);
-    iplImage2uint8point(comp_u, data + src->width * src->height);
-    iplImage2uint8point(comp_v, data + static_cast<int>(src->width * src->height * 1.25));
-
-    cvReleaseImage(&src);
-    cvReleaseImage(&yuv_image);
-    cvReleaseImage(&comp_yy);
-    cvReleaseImage(&comp_uu);
-    cvReleaseImage(&comp_vv);
-    cvReleaseImage(&comp_u);
-    cvReleaseImage(&comp_v);
-
-    return true;
+    return vcd::cvt_RGB2YUV(src, data, kMaxImageSize, w, h);
 }
