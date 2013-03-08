@@ -1,5 +1,6 @@
 #include "om_interface.h"
 #include "utils.h"
+#include "imitation.h"
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -15,21 +16,38 @@ char db_path[] = "../test_om/";
 unsigned char *img_data;
 int kMaxSize;
 
+//void test_dir(const char *path) {
+//    struct dirent **namelist;
+//    int file_num = scandir(path, &namelist, NULL, alphasort);
+//
+//    char full_name[128];
+//    for (int i = 0; i < file_num; ++i) {
+//        sprintf(full_name, "%s%s", path, namelist[i]->d_name);
+//        printf("%s\n", full_name);
+//
+//        int w, h;
+//        if (!simulate_input(full_name, img_data, kMaxSize, &w, &h)) {
+//            continue;
+//        }
+//
+//        //printf("Load OK!\n");
+//        query_image(img_data, w, h);
+//    }
+//}
+
 void test_dir(const char *path) {
-    struct dirent **namelist;
-    int file_num = scandir(path, &namelist, NULL, alphasort);
+    vcd::Imitation imgs;
+    if (imgs.OpenJpgDb(path) == false) {
+        fprintf(stderr, "no dir exists!\n");
+        return;
+    }
 
-    char full_name[128];
-    for (int i = 0; i < file_num; ++i) {
-        sprintf(full_name, "%s%s", path, namelist[i]->d_name);
-        printf("%s\n", full_name);
-
-        int w, h;
-        if (!simulate_input(full_name, img_data, kMaxSize, &w, &h)) {
-            continue;
+    int w, h;
+    while (1) {
+        if (imgs.GetNextImg(img_data, kMaxSize, &w, &h) == false) {
+            break;
         }
 
-        //printf("Load OK!\n");
         query_image(img_data, w, h);
     }
 }
