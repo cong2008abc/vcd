@@ -13,7 +13,7 @@ Imitation::~Imitation() {
 }
 
 bool Imitation::OpenJpgDb(const char *path) {
-    return _img_db.OpenDir(path);
+    return _img_db->OpenDir(path);
 }
 
 bool Imitation::GetNextImg(uint8 *data, int buff_size, int *w, int *h) {
@@ -21,7 +21,7 @@ bool Imitation::GetNextImg(uint8 *data, int buff_size, int *w, int *h) {
     
     while (1) {
         // if no file next, return false
-        if (_img_db.GetNextFile(&file) == false) {
+        if (_img_db->GetNextFile(&file) == false) {
             return false;
         }
 

@@ -15,19 +15,13 @@ bool IndexLRU::InsertThreadSafe(frame_ptr_t &frame) {
     const std::string &key = frame->GetOMStr();
     
     int32 ikey = HashFunc(key);
-    //printf("Hash Ok! %d %d\n", ikey, kLockersNum);
 
     // mutex locker
     MutexLock &locker = GetLocker(ikey);
     MutexLockGuard guard(locker);
 
-    fprintf(stderr, "Locker %d Locked!\n", ikey);
-    
-    //printf("Lock Ok!\n");
     real_idx_ptr_t idx_ptr = GetIndex(ikey);
     int ret = idx_ptr->Insert(frame);
-
-    fprintf(stderr, "Locker %d ", ikey);
 
     return ret;
 }

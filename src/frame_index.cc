@@ -4,7 +4,7 @@
 namespace vcd {
 
 /*
- *
+ * class FrameLRU is a ring struct store the frame ptr
  */
 FrameLRU::FrameLRU(const int size):
     k_lru_size_(size), pos(0), flag(0) {

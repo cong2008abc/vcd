@@ -52,16 +52,15 @@ void save_img(const vcd::Frame *frame, int idx, unsigned char *data, int w, int 
     fwrite(&h, sizeof(int), 1, pf);
 
     // then write the data of Img
-    fwrite(data, sizeof(unsigned char), w * h, pf);
+    fwrite(data, sizeof(unsigned char), w * h * 3 / 2, pf);
 
     fclose(pf);
 }
 
 int open_db(char *db_path) {
-		char log[128];
-		strcpy(log, db_path);
-		strcat(log, "om.log");
-//		freopen(log, "w", stderr);
+    char log[128];
+    strcpy(log, db_path);
+    strcat(log, "om.log");
 
     frame_index = new vcd::IndexLRU(1024u * 500);
     strcpy(path, db_path);
