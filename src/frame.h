@@ -30,8 +30,10 @@ public:
 private:
     uint32 _key;
 
-    Feature *_om_dt;        // feature pointer of om feature
-    Feature *_color_dt;     // feature pointer of color hist feature
+//    Feature *_om_dt;        // feature pointer of om feature
+//    Feature *_color_dt;     // feature pointer of color hist feature
+    ImpOMFeature *_om_dt;
+    ColorHistFeature *_color_dt;
     
     uint64 _hash_key;
     std::string _str_hash_key;

@@ -51,9 +51,12 @@ public:
 
     virtual float Compare(const Feature *rf);
 
+    bool GetCompressFeature(uint8 *data) const;
+
 private:
     float InterCompare(const uint8 *arr_a, const uint8 *arr_b);
     bool ExtractIndex(const uint8 *data, int *idx_a, int *idx_b);
+    bool CompressFeature(const uint8 *data, uint8 *result, int n) const;
 
 private:
     unsigned char *_arr_color;

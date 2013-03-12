@@ -34,13 +34,23 @@ ImpOMFeature::ImpOMFeature() {
 ImpOMFeature::~ImpOMFeature() {
 }
 
+/*
+ * this is a test extract function.
+ * extract a 4 * 4 OM feature from the whole image
+ * remain it is test the discriminate of OM feature
+ */
 bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h) {
-    return ExtractFrame(data, w, h, 4);
+//    return ExtractFrame(data, w, h, 4);
+    int n = 4;
+    _arr_color = new uint8[n * n];
+    _arr_entropy = new uint8[n * n];
+
+    get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
+    return true;
 }
 
 bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     _arr_color = new uint8[n * n];
-    //_arr_entropy = NULL;
     _arr_entropy = new uint8[n * n];
     
     // 1= cvt the yuv data to rgb
@@ -75,8 +85,31 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
 }
 
 bool ImpOMFeature::DumpToFile(FILE *pfile) {
-    fwrite(_arr_color, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
-    fwrite(_arr_entropy, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+    /*
+     * here we test the feature effective when feature_len = 16
+     * so the val of the element in om_feature_array is between 0~16
+     * if the element is compressed to 4bit(2^4 = 64).
+     * then the whole om_feature can be compressed to 4*N/8=8B (N=16).
+     */
+    if (ImpOMFeature::FEATURE_LEN == 16) {
+        int size_of_compress = ImpOMFeature::FEATURE_LEN * 4 / 8;
+        uint8 *compress = new uint8[size_of_compress];
+        if (_arr_color != NULL) {
+            CompressFeature(_arr_color, compress, ImpOMFeature::FEATURE_LEN);
+            fwrite(compress, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+        }
+        if (_arr_entropy != NULL) {
+            CompressFeature(_arr_entropy, compress, ImpOMFeature::FEATURE_LEN);
+            fwrite(compress, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+        }
+        delete [] compress;
+    } else {
+        /*
+         * otherwise don't compress the feature
+         */
+        fwrite(_arr_color, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+        fwrite(_arr_entropy, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+    }            
     return true;
 }
 
@@ -98,6 +131,10 @@ float ImpOMFeature::Compare(const Feature *rf) {
     float ret_entropy = InterCompare(_arr_entropy, ptr_r->_arr_entropy);
 
     return ret_color > ret_entropy ? ret_entropy : ret_color;
+}
+
+bool ImpOMFeature::GetCompressFeature(uint8 *result) const {
+    return CompressFeature(_arr_color, result, ImpOMFeature::FEATURE_LEN);
 }
 
 /*
@@ -136,7 +173,19 @@ bool ImpOMFeature::ExtractIndex(const uint8 *data, int *idx_a, int *idx_b) {
     return false;
 }
 
-
+/*
+ * this compress function try to compress the 16*8B to 8B
+ */
+bool ImpOMFeature::CompressFeature(const uint8 *data, uint8 *result,int n) const {
+    uint64 *pres = reinterpret_cast<uint64*>(result);
+    uint8 bit = 4;
+    uint8 mask = (1 << bit) - 1;
+    uint64 &rres = *pres;
+    for (int i = 0; i < n; ++i) {
+        rres = (rres << bit) | (data[i] & mask);
+    }
+    return true;
+}
 
 /*
  * non-member functions
