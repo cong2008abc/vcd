@@ -1,6 +1,8 @@
 #include "vcd_dir.h"
+#include "logging.h"
 #include <dirent.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 namespace vcd {
 
@@ -84,6 +86,21 @@ bool Dir::CloseDir() {
     _file_num = 0;
 
     return true;
+}
+
+FILE* Dir::OpenFile(const char *path, const char *flag) {
+    std::string ful_path = _path + "/" + path;
+    FILE *pf = fopen(ful_path.c_str(), flag);
+    if (pf == NULL) {
+        VLOG(-1, "Open file (%s,%s) Error!\n", path, flag);
+        return NULL;
+    }
+    return pf;
+}
+
+bool Dir::DeleteFile(const char *path) {
+    std::string ful_path = _path + "/" + path;
+    return remove(ful_path.c_str()) == 0;
 }
 
 int Dir::GetFileNum() {

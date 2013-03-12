@@ -26,22 +26,24 @@ UNITTEST = unittest_om
 
 all: $(LIB) $(UNITTEST)
 
-#$(AR) $(ARFLAGS) $(CFLAGS) $(LDFLAGS) $@ $(OBJS)
 $(LIB):$(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
-#$(OBJS):$(SRCS) $(HEADS)
-#	$(CC) $(CFLAGS) -c $^ $(INCLUDE)
-
-#include $(SRCS:.cc=.d)
+include $(SRCS:.cc=.d)
 
 %.o: %.cc
 	$(CC) $(CFLAGS) -c $< $(INCLUDE)
+
+%.d: %.cc
+	@set -e; rm -f $@; \
+	$(CC) -MM $(CFLAGS) $(INCLUDE) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
 
 unittest_om: unittest_om.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB) $(LDFLAGS_TEST)
 
 clean:
-	$(RM) $(OBJS) $(LIB) *.o
+	$(RM) $(OBJS) $(LIB) *.o *.d
 
 .PHONY: all clean

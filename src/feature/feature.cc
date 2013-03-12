@@ -19,12 +19,10 @@ int Feature::GetKeyId() {
 int Feature::SetKeyId(int key_id) {
     _feature_id = key_id;
     return 1;
-}
-
-/*
+} /*
  * implement ImproveOMFeature class
  */
-int ImpOMFeature::FEATURE_LEN = 16;
+int ImpOMFeature::LEN = 16;
 
 ImpOMFeature::ImpOMFeature() {
     _arr_color = NULL;
@@ -91,34 +89,34 @@ bool ImpOMFeature::DumpToFile(FILE *pfile) {
      * if the element is compressed to 4bit(2^4 = 64).
      * then the whole om_feature can be compressed to 4*N/8=8B (N=16).
      */
-    if (ImpOMFeature::FEATURE_LEN == 16) {
-        int size_of_compress = ImpOMFeature::FEATURE_LEN * 4 / 8;
+    if (ImpOMFeature::LEN == 16) {
+        int size_of_compress = ImpOMFeature::LEN * 4 / 8;
         uint8 *compress = new uint8[size_of_compress];
         if (_arr_color != NULL) {
-            CompressFeature(_arr_color, compress, ImpOMFeature::FEATURE_LEN);
-            fwrite(compress, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+            CompressFeature(_arr_color, compress, ImpOMFeature::LEN);
+            fwrite(compress, sizeof(uint8), ImpOMFeature::LEN, pfile);
         }
         if (_arr_entropy != NULL) {
-            CompressFeature(_arr_entropy, compress, ImpOMFeature::FEATURE_LEN);
-            fwrite(compress, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+            CompressFeature(_arr_entropy, compress, ImpOMFeature::LEN);
+            fwrite(compress, sizeof(uint8), ImpOMFeature::LEN, pfile);
         }
         delete [] compress;
     } else {
         /*
          * otherwise don't compress the feature
          */
-        fwrite(_arr_color, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
-        fwrite(_arr_entropy, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+        fwrite(_arr_color, sizeof(uint8), ImpOMFeature::LEN, pfile);
+        fwrite(_arr_entropy, sizeof(uint8), ImpOMFeature::LEN, pfile);
     }            
     return true;
 }
 
 bool ImpOMFeature::ReadFromFile(FILE *pfile) {
-    _arr_color = new uint8[ImpOMFeature::FEATURE_LEN];
-    _arr_entropy = new uint8[ImpOMFeature::FEATURE_LEN];
+    _arr_color = new uint8[ImpOMFeature::LEN];
+    _arr_entropy = new uint8[ImpOMFeature::LEN];
 
-    fread(_arr_color, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
-    fread(_arr_entropy, sizeof(uint8), ImpOMFeature::FEATURE_LEN, pfile);
+    fread(_arr_color, sizeof(uint8), ImpOMFeature::LEN, pfile);
+    fread(_arr_entropy, sizeof(uint8), ImpOMFeature::LEN, pfile);
     return true;
 }
 
@@ -126,23 +124,26 @@ float ImpOMFeature::Compare(const Feature *rf) {
     //TODO(zhouchao) compare two feature distance
     //...
 
-    const ImpOMFeature *ptr_r = dynamic_cast<const ImpOMFeature*>(rf);
-    float ret_color = InterCompare(_arr_color, ptr_r->_arr_color);
-    float ret_entropy = InterCompare(_arr_entropy, ptr_r->_arr_entropy);
+    const ImpOMFeature *real_rf = dynamic_cast<const ImpOMFeature*>(rf);
+    return Compare(real_rf);
+}
 
+float ImpOMFeature::Compare(const ImpOMFeature *rf) {
+    float ret_color = InterCompare(_arr_color, rf->_arr_color);
+    float ret_entropy = InterCompare(_arr_entropy, rf->_arr_entropy);
     return ret_color > ret_entropy ? ret_entropy : ret_color;
 }
 
 bool ImpOMFeature::GetCompressFeature(uint8 *result) const {
-    return CompressFeature(_arr_color, result, ImpOMFeature::FEATURE_LEN);
+    return CompressFeature(_arr_color, result, ImpOMFeature::LEN);
 }
 
 /*
  * this is compare method may be wrong!
  */
 float ImpOMFeature::InterCompare(const uint8 *arr_a, const uint8 *arr_b) {
-    uint8 s[ImpOMFeature::FEATURE_LEN], d[ImpOMFeature::FEATURE_LEN];
-    int len = ImpOMFeature::FEATURE_LEN;
+    uint8 s[ImpOMFeature::LEN], d[ImpOMFeature::LEN];
+    int len = ImpOMFeature::LEN;
     for (int i = 0; i < len; ++i) {
         s[arr_a[i]] = i;
     }

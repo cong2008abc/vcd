@@ -59,13 +59,14 @@ FrameIndexLRU::~FrameIndexLRU() {
  * insert frame into the framedb
  */
 int FrameIndexLRU::Insert(Frame *ptr) {
-    const std::string &key = ptr->GetOMStr();
+//    const std::string &key = ptr->GetOMStr();
+    const key_type key = ptr->GetComprsFeature();
     Frame *del_ptr = NULL;
 
     // 1= if the key don't appear
     // create a new item
     if (frame_db_.find(key) == frame_db_.end()) {
-        std::vector<Frame*> *vt = new std::vector<Frame*>();
+        val_type *vt = new val_type();
         vt->push_back(ptr);
         
         frame_db_[key] = vt;
@@ -76,9 +77,9 @@ int FrameIndexLRU::Insert(Frame *ptr) {
     } else {
         // 2= check all frame in this item
         // if exist the same frame, do nothing
-				fprintf(stderr, "Insert %s\n", key.c_str());
-				fflush(stderr);
-        std::vector<Frame*> *vt = frame_db_[key];
+//		fprintf(stderr, "Insert %s\n", key.c_str());
+//		fflush(stderr);
+        val_type *vt = frame_db_[key];
         size_t t;
         for (t = 0; t < vt->size(); ++t) {
             Frame *cmp_frame = vt->at(t);
@@ -100,11 +101,11 @@ int FrameIndexLRU::Insert(Frame *ptr) {
     // here exist a key-count pair!
     // if count[key] == 0, really delete this frame.
     if (del_ptr != NULL) {
-        const std::string del_key = del_ptr->GetOMStr();
+//        const std::string del_key = del_ptr->GetOMStr();
+        const key_type del_key = del_ptr->GetComprsFeature();
 
         if (frame_count_[del_key] == 1) {
-						fprintf(stderr, "Erase Key %s\n", del_key.c_str());
-            std::vector<Frame*> *vt = frame_db_[del_key];
+            val_type *vt = frame_db_[del_key];
             for (size_t t = 0; t < vt->size(); ++t) {
                 delete vt->at(t);
             }
@@ -123,4 +124,5 @@ int FrameIndexLRU::Insert(Frame *ptr) {
 int FrameIndexLRU::Delete(Frame *frame) {
     return 1;
 }
+
 } // namespace vcd

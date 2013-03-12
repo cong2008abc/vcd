@@ -23,7 +23,7 @@ INCLUDE =
 
 SRCS = feature_db.cc data_stream.cc \
 	   frame.cc frame_index.cc info_db.cc om_interface.cc \
-	   sa_cvpr_09.cc thread_safe_index.cc utils.cc vcd_file.cc \
+	   thread_safe_index.cc utils.cc vcd_file.cc \
 	   imitation.cc
 ifeq ($(METHOD), 1)
 # test the whole algorithm

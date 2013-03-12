@@ -34,3 +34,6 @@ src/third_party/sparsehash/
 
 # unittest exec
 unittest_*
+
+# .d
+*.d

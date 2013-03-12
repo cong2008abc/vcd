@@ -29,7 +29,7 @@ public:
 private:
     MutexLock& GetLocker(int32 int_key);
     real_idx_ptr_t GetIndex(int32 int_key);
-    int HashFunc(const std::string &key);
+    int HashFunc(uint8 *data, int len);
     
     //frame_ptr_t& GetPtrLru(frame_ptr_t &frame);
 

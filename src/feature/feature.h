@@ -38,18 +38,18 @@ private:
 
 class ImpOMFeature: public Feature {
     friend class Frame;
-    static int FEATURE_LEN;
+    static int LEN;
 public:
     ImpOMFeature();
     ~ImpOMFeature();
 
     virtual bool ExtractFrame(const uint8 *, int, int);
-    virtual bool ExtractFrame(const uint8 *data, int, int,
-                              int n = ImpOMFeature::FEATURE_LEN);
+    virtual bool ExtractFrame(const uint8 *data, int, int, int);
     virtual bool DumpToFile(FILE *pfile);
     virtual bool ReadFromFile(FILE *pfile);
 
     virtual float Compare(const Feature *rf);
+    virtual float Compare(const ImpOMFeature *rf);
 
     bool GetCompressFeature(uint8 *data) const;
 

@@ -6,7 +6,7 @@ namespace vcd {
 
 const float HIST_THRESHOLD = 0.2;
 
-Frame::Frame() {
+Frame::Frame(): _hash_key(0), _str_hash_key("Null"){
     _om_dt = new ImpOMFeature();
     _color_dt = new ColorHistFeature();
 }
@@ -21,38 +21,54 @@ bool Frame::ExtractFeature(const uint8 *data, int w, int h) {
     _color_dt->ExtractFrame(data, w, h);
 
     // generate hash key based on the om feature.
-    ImpOMFeature *om_feat = dynamic_cast<ImpOMFeature*>(_om_dt);
-    _hash_key = 0;
-    int half = ImpOMFeature::FEATURE_LEN / 2;
-    for (int i = 0; i < ImpOMFeature::FEATURE_LEN; ++i) {
-        _hash_key = _hash_key << 1;
-        if (om_feat->_arr_color[i] >= half) {
-            _hash_key = _hash_key | 0x1;
-        }
+    ImpOMFeature *om_feat = _om_dt;
+//    _hash_key = 0;
+//    int half = ImpOMFeature::FEATURE_LEN / 2;
+//    for (int i = 0; i < ImpOMFeature::FEATURE_LEN; ++i) {
+//        _hash_key = _hash_key << 1;
+//        if (om_feat->_arr_color[i] >= half) {
+//            _hash_key = _hash_key | 0x1;
+//        }
+//    }
+
+    if (ImpOMFeature::LEN == 16) {
+        uint8 *p = reinterpret_cast<uint8*>(&_om_16i);
+        om_feat->GetCompressFeature(p);
     }
 
-    // generate string hash key based on the om feature
-    std::stringstream ss;
-    for (int i = 0; i < ImpOMFeature::FEATURE_LEN; ++i) {
-        if (om_feat->_arr_color[i] < 10) {
-            ss << 0 << (int)(om_feat->_arr_color[i]);
-        } else {
-            ss << (int)(om_feat->_arr_color[i]);
-        }
-    }
-    //ss << "\n";
-    ss >> _str_hash_key;
-    _str_hash_key += "\n";
+    return true;
 
-    //std::cout << _str_hash_key << std::endl;
+//    std::stringstream ss;
+//    for (int i = 0; i < ImpOMFeature::FEATURE_LEN; ++i) {
+//        if (om_feat->_arr_color[i] < 10) {
+//            ss << 0 << (int)(om_feat->_arr_color[i]);
+//        } else {
+//            ss << (int)(om_feat->_arr_color[i]);
+//        }
+//    }
+//    //ss << "\n";
+//    ss >> _str_hash_key;
+//    _str_hash_key += "\n";
+
     return true;
 }
 
 bool Frame::EqualOM(const Frame *ptr) {
-    const ImpOMFeature *left = dynamic_cast<const ImpOMFeature*>(_om_dt);
-    const ImpOMFeature *right = dynamic_cast<const ImpOMFeature*>(ptr->_om_dt);
+    /*
+     * for 4*4 om, use the compress result to compare
+     */
+    if (_om_16i != 0) {
+        if (_om_16i != ptr->_om_16i) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
-    for (int i = 0; i < ImpOMFeature::FEATURE_LEN; ++i) {
+    const ImpOMFeature *left = _om_dt;
+    const ImpOMFeature *right = ptr->_om_dt;
+
+    for (int i = 0; i < ImpOMFeature::LEN; ++i) {
         if (left->_arr_color[i] != right->_arr_color[i]) {
             return false;
         }
@@ -91,6 +107,10 @@ bool Frame::SetKey(uint32 key) {
 
 uint32 Frame::GetKey() {
     return _key;
+}
+
+const uint64 Frame::GetComprsFeature() const {
+    return _om_16i;
 }
 
 } // namespace vcd

@@ -52,6 +52,12 @@ public:
     bool CloseDir();
 
 
+    /*
+     * Open a file, if not exists create it.
+     */
+    FILE *OpenFile(const char *path, const char *flag = "w");
+    bool DeleteFile(const char *path);
+
     // return the num of the files in the dir if dir open
     // else return -1;
     int GetFileNum();

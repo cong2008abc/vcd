@@ -26,6 +26,7 @@ public:
 
     bool SetKey(uint32 key);
     uint32 GetKey();
+    const uint64 GetComprsFeature() const;
 
 private:
     uint32 _key;
@@ -37,6 +38,8 @@ private:
     
     uint64 _hash_key;
     std::string _str_hash_key;
+    
+    uint64 _om_16i;
 };
 
 } // namespace vcd
