@@ -3,14 +3,14 @@
 #include "feature/img_saliency.h"
 #include "base/logging.h"
 #include "feature/om.h"
-#include "sa_cvpr_09.h"
 #include <stdio.h>
 #include <dirent.h>
 #include <highgui.h>
 
 const int LIB_NUM = 2;
-//"../img/",
-const char *lib[] = {                     "/mnt/db/sample/",
+const char *lib[] = {
+                     "../img/",
+                     "/mnt/db/sample/",
                      "/mnt/db/1/",
                      "/mnt/db/2/",
                      "/mnt/db/3/"};
@@ -44,22 +44,7 @@ void test(const char *path) {
 }
 */
 
-void test_cvpr(const char *path) {
-    if (path == NULL) {
-        return;
-    } 
-
-    IplImage *src = cvLoadImage(path);
-    if (src == NULL) {
-        return;
-    }
-
-    vcd::cvpr09_saliency(src);
-
-    cvReleaseImage(&src);
-}
-
-void test_hc_method(const char *path) {
+void test_hc_method(const char *path, cv::Mat *res) {
     if (path == NULL) {
         return ;
     }
@@ -71,25 +56,26 @@ void test_hc_method(const char *path) {
         return;
     }
 
-    cv::Rect margin;
-    remove_margin(_src, &margin);
-    cv::rectangle(_src, margin, cv::Scalar(0,255,0));
-    show_mat(_src);
-    return;
-
+//    cv::Rect margin;
+//    remove_margin(_src, &margin);
+//    cv::Mat roi(_src, margin);
     cv::Mat src;
-    resize_mat_by_width(_src, src, 320);
+    cv::Mat roi = _src;
+    resize_mat_by_width(roi, src, 120);
     show_mat(src);
 
     cv::Mat result;
     vcd::Saliency::Get(src, result, vcd::Saliency::RC);
+    //cv::imwrite("../img/sample_orig.jpg", src);
     vcd::Saliency::Evaluate(result, result);
+    //cv::imwrite("../img/sample_rc01.jpg", result);
 
     if (!result.data) {
         return;
     }
 
     show_mat(result);
+    *res = result;
 }
 
 void test_dir(const char *path) {
@@ -97,11 +83,17 @@ void test_dir(const char *path) {
     int file_num = scandir(path, &namelist, NULL, alphasort);
 
     char full_name[128];
-    for (int i = 0; i < file_num; ++i) {
+    for (int i = 2; i < file_num; ++i) {
         sprintf(full_name, "%s%s", path, namelist[i]->d_name);
         printf("%s\n", full_name);
 
-        test_hc_method(full_name);
+        cv::Mat res;
+        test_hc_method(full_name, &res);
+//        if (res.data) {
+//            sprintf(full_name, "../img/%s_bef", namelist[i]->d_name);
+//            printf("%s\n", full_name);
+//            cv::imwrite(full_name, res);
+//        }
     }
 }
 

@@ -383,7 +383,7 @@ bool simulate_input(const char *path, uint8 *data, int kMaxImageSize,
                     int *w, int *h) {
     IplImage *src = cvLoadImage(path);
     if (src == NULL || src->nChannels != 3) {
-        VLOG(-1, "Need Color Image");
+        VLOG(-1, "Need Color Image %s", path);
         return false;
     }
     

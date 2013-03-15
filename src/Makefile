@@ -1,11 +1,11 @@
-METHOD = 1
+METHOD = 2
 DEBUG = y
 
 CC = g++
 MAKE = make
 CFLAGS = -fPIC `pkg-config --cflags opencv`
 CFLAGS += -Wall
-LDFLAGS = `pkg-config --libs opencv`
+LDFLAGS = `pkg-config --libs opencv` -lpthread
 
 # whether debug
 ifeq ($(DEBUG), y)
@@ -18,13 +18,14 @@ SUBDIRS := base feature
 LIBS := base/libbase.a feature/libfeature.a
 #LIBS +=lib/libgtest.a
 
-INCLUDE = 
+INCLUDE = -I./third_party
 #target = run_test_sa
 
 SRCS = feature_db.cc data_stream.cc \
 	   frame.cc frame_index.cc info_db.cc om_interface.cc \
 	   thread_safe_index.cc utils.cc vcd_file.cc \
-	   imitation.cc
+	   imitation.cc image_buf.cc
+
 ifeq ($(METHOD), 1)
 # test the whole algorithm
 SRCS += test_om.cc
@@ -37,8 +38,16 @@ endif
 
 OBJS = $(subst .cc,.o,$(SRCS))
 
-all: target
+# unittest target
+UNITTEST = unittest_imagebuf
+LDFLAGS_TEST = -L./lib -lgtest
+#INCLUDE_TEST = -I./third_party
 
+all: $(UNITTEST) target 
+
+#
+# main run app to test the while program
+#
 target: $(OBJS) 
 	for dir in $(SUBDIRS);\
 	do $(MAKE) -C $$dir all || exit 1;\
@@ -46,12 +55,27 @@ target: $(OBJS)
 	$(CC) -o run_test $(CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS)
 	cp run_test $(RUN_NAME)
 
+#
+# rules for build .cc
+#
 %.o: %.cc
 	$(CC) $(CFLAGS) -c $< $(INCLUDE)
 
+#
+# generate unittest of imagebuf
+# 
+UNITTEST_IMAGEBUF_SRCS = image_buf.cc imitation.cc utils.cc		\
+						 unittest_imagebuf.cc
+UNITTEST_IMAGEBUF_OBJS = $(subst .cc,.o,$(UNITTEST_IMAGEBUF_SRCS))
+unittest_imagebuf: $(UNITTEST_IMAGEBUF_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS_TEST) $(LDFLAGS)
+
+#
+# clean make
+#
 RM = rm -rf
 clean:
 	@for dir in $(SUBDIRS); do $(MAKE) -C $$dir clean || exit 1; done
-	$(RM) $(OBJS) $(target) run_test*
+	$(RM) $(OBJS) $(target) run_test* $(UNITTEST)
 
 .PHONY: all clean sublib

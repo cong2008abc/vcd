@@ -34,6 +34,12 @@ bool Dir::OpenDir(const char *path) {
     return true;
 }
 
+/*
+ * TODO(zc)
+ * get the next file will also get the file 
+ * "./." and "./..", this two special files
+ * those two file are not needed in my systems.
+ */
 bool Dir::GetNextFile(std::string *file_name) {
     if (_is_open == false) {
         return false;
@@ -42,7 +48,7 @@ bool Dir::GetNextFile(std::string *file_name) {
     if (_idx >= _file_num) {
         return false;
     }
-
+    
     *file_name = _path + "/" + std::string(_namelist[_idx]->d_name);
     _idx++;
 

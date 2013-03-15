@@ -67,6 +67,12 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     cv::Mat saliency_map;
     Saliency::Get(roi, saliency_map);    
     Saliency::ExtractView(saliency_map, rect);
+
+    // TODO(zhouchao) here exist a problem
+    // because the main rectangle is extract of the roi of 
+    // original image, so the coordinate of rect is the roi
+    // not the original image.
+    // so here exist a cvting...
     
 //    show_mat(roi);
 //    cv::rectangle(saliency_map, rect, cv::Scalar(255));
