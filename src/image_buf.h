@@ -21,6 +21,7 @@ public:
     bool AppendImage(const uint8 *data, int w, int h, uint64 feat);
     bool DumpImage(image_node *img);
     const uint8* GetData();
+    bool DumpInfo();
 
 private:
     bool RemoveImage();

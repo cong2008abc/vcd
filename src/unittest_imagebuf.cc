@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 
 TEST(ImageBuf, init) {
-    vcd::ImageBuf *img_buffer = vcd::image_buffer_init(10, 2, "../feature/db");
+    vcd::ImageBuf *img_buffer = vcd::image_buffer_init(10, 2, "../feature_db");
 
     vcd::Imitation img_source;
     img_source.OpenJpgDb("../img/");
@@ -14,6 +14,21 @@ TEST(ImageBuf, init) {
     uint64 feat = 1;
     while (img_source.GetNextImg(data, 1024 * 900, &w, &h)) {
         img_buffer->AppendImage(data, w, h, feat++);
+        img_buffer->DumpInfo();
+    }
+}
+
+TEST(ImageBuf, bigdata) {
+    vcd::ImageBuf *img_buffer = vcd::image_buffer_init(10, 2, "/mnt/share/test_db/");
+
+    vcd::Imitation img_source;
+    img_source.OpenJpgDb("/mnt/db/1/");
+    uint8 data[1024 * 900];
+    int w, h;
+    uint64 feat = 1;
+    while (img_source.GetNextImg(data, 1024 * 900, &w, &h)) {
+        img_buffer->AppendImage(data, w, h, feat++);
+        //img_buffer->DumpInfo();
     }
 }
 

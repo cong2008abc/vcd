@@ -4,6 +4,7 @@
 #include <memory.h>
 #include <pthread.h>
 #include <set>
+#include <unistd.h>
 
 namespace vcd {
 
@@ -46,7 +47,7 @@ do {                                    \
 
 #define ADD_BUF_NUM(buf)                \
 do {                                    \
-    *(reinterpret_cast<int*>(buf)) = 0; \
+    (*(reinterpret_cast<int*>(buf)))++; \
 } while(0)
 
 #define SWITCH_UINT8_PTR(a, b)          \
@@ -88,6 +89,7 @@ bool ImageBuf::AppendImage(const uint8 *data, int w, int h,
         CLEAN_BUF(_buf[0]);
 
         pthread_cond_signal(&img_info->buf_cond);
+        usleep(2000);
     } 
 
     image_node *node = reinterpret_cast<image_node*>(_tail);
@@ -102,6 +104,11 @@ bool ImageBuf::AppendImage(const uint8 *data, int w, int h,
 
 const uint8* ImageBuf::GetData() {
     return _buf[1]; 
+}
+
+bool ImageBuf::DumpInfo() {
+    fprintf(stderr, "exist %d image\n", *((int*)_buf[0]));
+    return true;
 }
 
 void *thread_save_buf(void *arg) {
@@ -127,14 +134,18 @@ void *thread_save_buf(void *arg) {
                 fprintf(stderr, "someting terrible happens\n");
                 continue;
             }
+#ifdef _VCD_DEBUG
+            fprintf(stderr, "open new db:%s\n", name);
+#endif
             img_info->cur_buf_num = 0;
         }
         fwrite(ptr, sizeof(uint8), kbufsize, img_info->pf_cur);
         img_info->cur_buf_num++;
 
-        if (img_info->cur_buf_num == img_info->max_tmp_size) {
+        if (img_info->cur_buf_num >= img_info->max_tmp_size) {
             fclose(img_info->pf_cur);
             img_info->pf_cur = NULL;
+//            img_info->cur_buf_num = 0;
             img_info->last_create_idx++;
             
             pthread_mutex_lock(&img_info->io_mutex);
@@ -146,7 +157,7 @@ void *thread_save_buf(void *arg) {
             if (img_info->tmp_file_num >= max_tmp_file_num &&
                 img_info->io_enable == false) {
                 img_info->io_enable = true;
-                pthread_cond_signal(&img_info->io_cond);
+     //           pthread_cond_signal(&img_info->io_cond);
             }
             pthread_mutex_unlock(&img_info->io_mutex);
         }
@@ -167,13 +178,14 @@ void *thread_tmp_handler(void *arg) {
         char name[128];
         sprintf(name, "%s/%d_tmp.imgdb", img_info->path,
                                          img_info->last_create_idx);
-        img_info->pf_cur = fopen(name, "w");
         FILE *pf = fopen(name, "r");
         if (pf == NULL) {
             fprintf(stderr, "something terrible happens!\n");
             continue;
         }
-
+#ifdef _VCD_DEBUG
+        fprintf(stderr, "---------- handle the %s\n", name);
+#endif
         // hanle the tmp file
         int k = img_info->max_tmp_size;
         while (k--) {
@@ -202,6 +214,7 @@ ImageBuf* image_buffer_init(int buf_num_of_file, int max_tmp_num,
     img_info->tmp_file_num = 0;
     img_info->last_handle_idx = 0;
     img_info->last_create_idx = 0;
+    img_info->cur_buf_num = 0;
     img_info->max_tmp_size = buf_num_of_file;
 
     pthread_mutex_init(&img_info->io_mutex, NULL);

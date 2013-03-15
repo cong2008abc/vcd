@@ -65,10 +65,6 @@ bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h) {
     cvResize(comp_uu, comp_u);
     cvResize(comp_vv, comp_v);
 
-//    show_image(comp_yy, "yy");
-//    show_image(comp_u, "u");
-//    show_image(comp_v, "v");
-    
     if (src->width * src->height * 3/2 >= nbuf) {
         return false;
     }
@@ -80,10 +76,6 @@ bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h) {
     offset += get_ipl_data(comp_u, 0, data + offset);
     offset += get_ipl_data(comp_v, 0, data + offset);
     
-//    iplImage2uint8point(comp_yy, data);
-//    iplImage2uint8point(comp_u, data + src->width * src->height);
-//    iplImage2uint8point(comp_v, data + static_cast<int>(src->width * src->height * 1.25));
-
     cvReleaseImage(&yuv_image);
     cvReleaseImage(&comp_yy);
     cvReleaseImage(&comp_uu);

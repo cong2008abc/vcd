@@ -37,3 +37,5 @@ unittest_*
 
 # .d
 *.d
+
+# include all .cc files

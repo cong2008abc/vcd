@@ -21,4 +21,6 @@ private:                                    \
 
 } // namespace vcd
 
+#define _VCD_DEBUG
+
 #endif
