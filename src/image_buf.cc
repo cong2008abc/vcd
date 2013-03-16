@@ -34,6 +34,7 @@ static image_tmp_info *img_info;
 static int max_tmp_file_num;
 bool exit;
 static ImageBuf *image_buffer;
+static pthread_t tid[2];
 
 const int kbufsize = 1024 * 1024 * 10;      // for test, 10MB buf
 
@@ -49,6 +50,9 @@ do {                                    \
 do {                                    \
     (*(reinterpret_cast<int*>(buf)))++; \
 } while(0)
+
+#define GET_BUF_NUM(buf)                \
+    (*(reinterpret_cast<int*>(buf)))
 
 #define SWITCH_UINT8_PTR(a, b)          \
 do {                                    \
@@ -112,7 +116,7 @@ bool ImageBuf::DumpInfo() {
 }
 
 void *thread_save_buf(void *arg) {
-    const uint8 *ptr = reinterpret_cast<const uint8*>(arg);
+    ImageBuf *buf = reinterpret_cast<ImageBuf*>(arg);
     while (!exit) {
         // here is a simple cond use.
         // i think the io write operator is more faster than
@@ -124,6 +128,7 @@ void *thread_save_buf(void *arg) {
         // always wait for the signal sent by network processers
         pthread_cond_wait(&img_info->buf_cond,
                           &img_info->buf_mutex);
+        const uint8 *ptr = buf->GetData();
 
         if (img_info->pf_cur == NULL) {
             char name[128];
@@ -139,13 +144,14 @@ void *thread_save_buf(void *arg) {
 #endif
             img_info->cur_buf_num = 0;
         }
+
         fwrite(ptr, sizeof(uint8), kbufsize, img_info->pf_cur);
         img_info->cur_buf_num++;
 
         if (img_info->cur_buf_num >= img_info->max_tmp_size) {
+            // close current tmpfile
             fclose(img_info->pf_cur);
             img_info->pf_cur = NULL;
-//            img_info->cur_buf_num = 0;
             img_info->last_create_idx++;
             
             pthread_mutex_lock(&img_info->io_mutex);
@@ -157,10 +163,12 @@ void *thread_save_buf(void *arg) {
             if (img_info->tmp_file_num >= max_tmp_file_num &&
                 img_info->io_enable == false) {
                 img_info->io_enable = true;
-     //           pthread_cond_signal(&img_info->io_cond);
+                pthread_cond_signal(&img_info->io_cond);
             }
             pthread_mutex_unlock(&img_info->io_mutex);
         }
+
+//        fprintf(stderr, "Finish Writing One buffe\n");
     }
     return NULL;
 }
@@ -175,34 +183,81 @@ void *thread_tmp_handler(void *arg) {
         img_info->tmp_file_num--;
         pthread_mutex_unlock(&img_info->io_mutex);
 
-        char name[128];
+        char name[128], aft_name[128];
         sprintf(name, "%s/%d_tmp.imgdb", img_info->path,
-                                         img_info->last_create_idx);
-        FILE *pf = fopen(name, "r");
+                                         img_info->last_handle_idx);
+        sprintf(aft_name, "%s/%d.imgdb", img_info->path,
+                                         img_info->last_handle_idx);
+        FILE *pf = fopen(name, "rb");
         if (pf == NULL) {
             fprintf(stderr, "something terrible happens!\n");
+            continue;
+        }
+
+        FILE *aft_pf = fopen(aft_name, "ab+");
+        if (aft_pf == NULL) {
+            fprintf(stderr, "something terrible happens!\
+                             couldn't open aft_db\n");
+            // close the pf open before
+            fclose(pf);
             continue;
         }
 #ifdef _VCD_DEBUG
         fprintf(stderr, "---------- handle the %s\n", name);
 #endif
         // hanle the tmp file
-        int k = img_info->max_tmp_size;
-        while (k--) {
+        int k = 0;
+        while (k++ < img_info->max_tmp_size) {
             int buf_num;
             fread(&buf_num, sizeof(int), 1, pf);
+//            fprintf(stderr, "--- %d\n", buf_num);
             image_node node;
             uint8 *data_buf[320 * 160 * 3];
             for (int i = 0; i < buf_num; ++i) {
                 fread(&node, sizeof(image_node), 1, pf);
+//                fprintf(stderr, "- %llu %d %d\n", node.om_16i,
+//                                                  node.w, node.h);
+                int image_size = YUV_IMAGE_SIZE(node.w, node.h);
                 if (img_info->feat_repeater->find(node.om_16i) !=
-                    img_info->feat_repeater->end()) {
+                    img_info->feat_repeater->end()) { 
                     // TODO(zc) save this image
+                    fread(data_buf, sizeof(uint8), image_size, pf);
+
+                    fwrite(&node, sizeof(image_node), 1, aft_pf);
+                    fwrite(data_buf, sizeof(uint8), image_size, aft_pf);
+
+                    /*
+                     * method two, no using!
+                     ***
+                    char img_name[128];
+                    sprintf(img_name, "%s/%llu.yuv", img_info->path,
+                                                       node.om_16i);
+                    FILE *img_pf = fopen(img_name, "ab+");
+                    if (img_pf == NULL) {
+                        printf("%s\n", img_name);
+                    }
+                    fwrite(&node, sizeof(image_node), 1, img_pf);
+                    fwrite(data_buf, sizeof(uint8), image_size, img_pf);
+                    fclose(img_pf);
+                    */
                 } else {
-                    fseek(pf, node.w * node.h * 3 / 2, SEEK_CUR);
+                    fseek(pf, image_size, SEEK_CUR);
                 }
             }
+            fseek(pf, kbufsize * k, SEEK_SET);
         }
+
+        fclose(pf);
+        fclose(aft_pf);
+
+        // clean this tmpfile
+        remove(name);
+        img_info->last_handle_idx++;
+//        char name_new[128];
+//        strcpy(name_new, name);
+//        strcat(name_new, "_old");
+//        fprintf(stderr, "%s\n", name_new);
+//        fprintf(stderr, "rename %d\n", rename(name, name_new));
     }
     return NULL;
 }
@@ -232,9 +287,8 @@ ImageBuf* image_buffer_init(int buf_num_of_file, int max_tmp_num,
     image_buffer = new ImageBuf();
 
     // create thread
-    pthread_t tid[2];
     pthread_create(&tid[0], NULL, thread_save_buf,
-                   (void*)(image_buffer->GetData()));
+                   (void*)(image_buffer));
     pthread_create(&tid[1], NULL, thread_tmp_handler, NULL);
 
     return image_buffer;
@@ -246,6 +300,8 @@ void insert_repeat_feature(uint64 om_16i) {
 
 void close_image_buffer() {
     exit = true;    
+//    pthread_join(tid[0], NULL);
+//    pthread_join(tid[1], NULL);
 }
 
 } // namespace vcd

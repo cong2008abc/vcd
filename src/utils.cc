@@ -387,5 +387,7 @@ bool simulate_input(const char *path, uint8 *data, int kMaxImageSize,
         return false;
     }
     
-    return vcd::cvt_RGB2YUV(src, data, kMaxImageSize, w, h);
+    bool result = vcd::cvt_RGB2YUV(src, data, kMaxImageSize, w, h);
+    cvReleaseImage(&src);
+    return result;
 }

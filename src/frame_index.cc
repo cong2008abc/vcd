@@ -62,6 +62,7 @@ int FrameIndexLRU::Insert(Frame *ptr) {
 //    const std::string &key = ptr->GetOMStr();
     const key_type key = ptr->GetComprsFeature();
     Frame *del_ptr = NULL;
+    int status = -1;
 
     // 1= if the key don't appear
     // create a new item
@@ -73,6 +74,7 @@ int FrameIndexLRU::Insert(Frame *ptr) {
         frame_count_[key] = 1;
         del_ptr = frame_lru_->Update(ptr);
 
+        status = NEW;
 //        fprintf(stderr, "Create Item\n");
     } else {
         // 2= check all frame in this item
@@ -88,11 +90,14 @@ int FrameIndexLRU::Insert(Frame *ptr) {
             }
         }
 
-        if (t != vt->size()) return 1;
+        if (t != vt->size()) {
+            return EXIST;
+        }
 
         vt->push_back(ptr);
         frame_count_[key]++;
         del_ptr = frame_lru_->Update(ptr);
+        status = REPEAT;
     }
 
     // 3= if the frame db is full
@@ -118,7 +123,7 @@ int FrameIndexLRU::Insert(Frame *ptr) {
         }
     }
 
-    return 0;
+    return status;
 }
 
 int FrameIndexLRU::Delete(Frame *frame) {

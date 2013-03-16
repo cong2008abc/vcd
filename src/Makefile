@@ -43,7 +43,7 @@ UNITTEST = unittest_imagebuf
 LDFLAGS_TEST = -L./lib -lgtest
 #INCLUDE_TEST = -I./third_party
 
-all: $(UNITTEST) target 
+all: target $(UNITTEST) 
 
 #
 # main run app to test the while program

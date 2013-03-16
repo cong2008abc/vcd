@@ -23,7 +23,7 @@ public:
     IndexLRU(const int size = kMaxFrameNum);
     ~IndexLRU();
 
-    bool InsertThreadSafe(frame_ptr_t &frame);
+    int InsertThreadSafe(frame_ptr_t &frame);
     bool DeleteFrame(frame_ptr_t &frame);
 
 private:

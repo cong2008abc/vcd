@@ -11,7 +11,7 @@ IndexLRU::IndexLRU(const int size) {
 
 IndexLRU::~IndexLRU() {}
 
-bool IndexLRU::InsertThreadSafe(frame_ptr_t &frame) {
+int IndexLRU::InsertThreadSafe(frame_ptr_t &frame) {
 //    const std::string &key = frame->GetOMStr();
     
     uint64 key_ = frame->GetComprsFeature();

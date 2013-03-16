@@ -98,6 +98,8 @@ void test_dir(const char *path) {
 }
 
 int main() {
+    printf("%s\n", CV_VERSION);
+    return 0;
     for (int i = 0; i < LIB_NUM; ++i) 
         test_dir(lib[i]);
 }

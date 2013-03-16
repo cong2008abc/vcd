@@ -9,10 +9,16 @@
 
 namespace vcd {
 
-enum QUERY_RESULT {
-    NO_ONE = 0x1,
-    EXIST = 0x2,
-    CONFICT = 0x3
+//enum QUERY_RESULT {
+//    NO_ONE = 0x1,
+//    EXIST = 0x2,
+//    CONFICT = 0x3
+//};
+
+enum INSERT_RESULT {
+    EXIST = 0x1,
+    NEW = 0x2,
+    REPEAT = 0x3
 };
 
 /*
@@ -44,8 +50,6 @@ public:
     virtual int Delete(Frame *ptr);
 
 private:
-//    typedef std::map<const std::string, std::vector<Frame*>*> ele_type;
-//    typedef std::map<const std::string, int> ele_count_type;
     typedef const uint64 key_type;
     typedef std::vector<Frame*> val_type;
     typedef std::map<key_type, val_type*> ele_type;

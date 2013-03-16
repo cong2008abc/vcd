@@ -19,14 +19,15 @@ TEST(ImageBuf, init) {
 }
 
 TEST(ImageBuf, bigdata) {
-    vcd::ImageBuf *img_buffer = vcd::image_buffer_init(10, 2, "/mnt/share/test_db/");
+    vcd::ImageBuf *img_buffer = vcd::image_buffer_init(20, 1, "/mnt/share/test_db/");
 
     vcd::Imitation img_source;
     img_source.OpenJpgDb("/mnt/db/1/");
-    uint8 data[1024 * 900];
+    uint8 data[1024 * 900 * 3];
     int w, h;
     uint64 feat = 1;
-    while (img_source.GetNextImg(data, 1024 * 900, &w, &h)) {
+    while (img_source.GetNextImg(data, 1024 * 900 * 3, &w, &h)) {
+        vcd::insert_repeat_feature(feat);
         img_buffer->AppendImage(data, w, h, feat++);
         //img_buffer->DumpInfo();
     }
