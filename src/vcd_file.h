@@ -11,20 +11,20 @@ namespace vcd {
 // max size of one vcf log file 2G
 const uint64 kMaxSize = 1024 * 1024 * 1024 * 2u; 
 
-class VcdFile {
+class File {
 public:
-    explicit VcdFile(const char *path, const char *type_name,
-                     const int max_count = kMaxSize);
-    ~VcdFile();
+    explicit File(const char *path, const char *type_name,
+                  const int max_count = kMaxSize);
+    ~File();
 
     bool AppendFrame(Frame *ptr);
-    bool Append(const char *ptr, uint32 size);
+    bool Append(void *ptr, uint32 size);
     bool Append(const std::string &data);
-		bool Append(const char *ptr);
+    bool Append(const char *ptr);
 private:
     bool Dump();
-    bool CopyToCache(const char *ptr, int len);
-    bool GetFileName(char *ret);
+    bool CopyToCache(void *ptr, int len);
+    bool CreateName(char *ret);
 
 private:
     char path_[128];
@@ -36,7 +36,7 @@ private:
     char *cache_;
     FILE *pf_;
 
-		MutexLock locker_;
+    MutexLock locker_;
 };
 
 } // namespace vcd

@@ -7,7 +7,7 @@ namespace vcd {
 const uint32 kCacheSize = 1024 * 32; // 32k cache
 // one file store 100M features
 
-VcdFile::VcdFile(const char *path, const char *type_name,
+File::File(const char *path, const char *type_name,
                  const int max_count)
     : max_size_(max_count), save_size_(0),
       left_space_(kCacheSize), pf_(NULL) {
@@ -17,7 +17,7 @@ VcdFile::VcdFile(const char *path, const char *type_name,
     strcpy(type_name_, type_name);
 }
 
-VcdFile::~VcdFile() {
+File::~File() {
     if (left_space_ != kCacheSize) {
         Dump();
     }
@@ -30,18 +30,19 @@ VcdFile::~VcdFile() {
     delete [] cache_;
 }
 
-bool VcdFile::AppendFrame(Frame *ptr) {
-    return true;
+bool File::AppendFrame(Frame *ptr) {
+    return false;
 }
 
-bool VcdFile::Append(const char *ptr, uint32 size) {
-		MutexLockGuard lock(locker_);
+bool File::Append(void *ptr_, uint32 size) {
+	MutexLockGuard lock(locker_);
     // copy the data to the memory cache,
     // if the cache is full, flush it before
     if (left_space_ >= size) {
-        CopyToCache(ptr, size);    
+        CopyToCache(ptr_, size);    
     } else {
         uint32 t = left_space_;
+        char *ptr = (char*)ptr_;
         CopyToCache(ptr, left_space_);
         Dump();
         CopyToCache(ptr + t, size - t);
@@ -60,19 +61,18 @@ bool VcdFile::Append(const char *ptr, uint32 size) {
     return true;
 }
 
-bool VcdFile::Append(const std::string &data) {
-    return Append(data.c_str(), data.size());
+bool File::Append(const std::string &data) {
+    return Append((void*)data.c_str(), data.size());
 }
 
-bool VcdFile::Append(const char *ptr) {
+bool File::Append(const char *ptr) {
 		uint32 size = strlen(ptr);
-		return Append(ptr, size);
+		return Append((void*)ptr, size);
 }
 
-bool VcdFile::CopyToCache(const char *ptr, int len) {
-		//MutexLockGuard(locker_);
+bool File::CopyToCache(void *ptr, int len) {
     uint32 start_pos = kCacheSize - left_space_;
-    strncpy(cache_ + start_pos, ptr, len);
+    memcpy(cache_ + start_pos, ptr, len);
     left_space_ -= len;
     if (left_space_ == 0) {
             Dump();
@@ -80,18 +80,16 @@ bool VcdFile::CopyToCache(const char *ptr, int len) {
     return true;
 }
 
-bool VcdFile::Dump() {
-    fprintf(stdout, "Try to Dump Frame!\n");
+bool File::Dump() {
+    fprintf(stdout, "Try to Dump FileData!\n");
 		
-		//MutexLockGuard(locker_);
     if (pf_ == NULL) {
         char tmp[128];    
-        GetFileName(tmp);
+        CreateName(tmp);
         pf_ = fopen(tmp, "w");
     }
 
     fwrite(cache_, sizeof(char), kCacheSize - left_space_, pf_);
-		//fflush(pf_);
     left_space_ = kCacheSize;
 
     return true;
@@ -99,7 +97,7 @@ bool VcdFile::Dump() {
 
 // vcd file will be named by
 // path/[cur_time].[type_name]
-bool VcdFile::GetFileName(char *ret) {
+bool File::CreateName(char *ret) {
     // 1= get cur time
     time_t cur_time;
     time(&cur_time);

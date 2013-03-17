@@ -10,7 +10,7 @@
 #include <pthread.h>
 
 vcd::IndexLRU *frame_index;
-vcd::VcdFile *omf_file;
+vcd::File *omf_file;
 char path[128];
 vcd::ImageBuf *image_buffer;
 
@@ -26,9 +26,9 @@ int open_db(char *db_path) {
     strcpy(path, db_path);
 
     //new method
-    omf_file = new vcd::VcdFile(db_path, "omf");
+    omf_file = new vcd::File(db_path, "omf");
 
-    image_buffer = vcd::image_buffer_init();
+    image_buffer = vcd::image_buffer_init(10, 4, "../feature_db/");
 
     return 0;
 }
@@ -45,13 +45,14 @@ int query_image(unsigned char *data, int w, int h) {
     frame->ExtractFeature(data, w, h);
 
     int status = frame_index->InsertThreadSafe(frame);
+    uint64 feature = frame->GetComprsFeature();
     switch(status) {
         case vcd::REPEAT:
-            vcd::insert_repeat_feature(frame->GetComprsFeature());
+            vcd::insert_repeat_feature(feature);
         case vcd::NEW:
-            omf_file->Append(frame->GetOMStr());
-            image_buffer->AppendImage(data, w, h,
-                                      frame->GetComprsFeature());
+            omf_file->Append(&feature, sizeof(feature));
+            //omf_file->Append(frame->GetOMStr());
+            image_buffer->AppendImage(data, w, h, feature); 
             break;
         case vcd::EXIST:
             // do nothing
