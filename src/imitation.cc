@@ -10,6 +10,7 @@ Imitation::Imitation() {
 }
 
 Imitation::~Imitation() {
+    delete _img_db;
 }
 
 bool Imitation::OpenJpgDb(const char *path) {

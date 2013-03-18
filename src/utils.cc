@@ -379,6 +379,13 @@ void show_yuv(const char *path) {
     delete [] data;
 }
 
+void show_yuv_colorful(const uint8 *data, int w, int h) {
+    IplImage *mat = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+    vcd::cvt_YUV2RGB(data, w, h, mat);
+    show_image(mat, "color_yuv");
+    cvReleaseImage(&mat);
+}
+
 bool simulate_input(const char *path, uint8 *data, int kMaxImageSize,
                     int *w, int *h) {
     IplImage *src = cvLoadImage(path);

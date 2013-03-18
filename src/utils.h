@@ -33,6 +33,8 @@ void drawPoint(IplImage *src, int w, int h);
 void drawPoint( IplImage *src, int w, int h, int color );
 void show_yuv(const char *path);
 
+void show_yuv_colorful(const uint8 *data, int w, int h);
+
 inline void show_mat(const cv::Mat &pic) {
     cv::namedWindow("mat", CV_WINDOW_AUTOSIZE);
     cv::imshow("mat", pic);

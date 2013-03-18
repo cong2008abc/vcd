@@ -24,6 +24,8 @@ bool Dir::OpenDir(const char *path) {
         return false;
     }
 
+    CloseDir();
+
     _file_num = scandir(path, &_namelist, NULL, alphasort);
     if (_file_num < 0) {
         return false;

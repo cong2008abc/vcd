@@ -210,13 +210,10 @@ void *thread_tmp_handler(void *arg) {
         while (k++ < img_info->max_tmp_size) {
             int buf_num;
             fread(&buf_num, sizeof(int), 1, pf);
-//            fprintf(stderr, "--- %d\n", buf_num);
             image_node node;
             uint8 *data_buf[320 * 160 * 3];
             for (int i = 0; i < buf_num; ++i) {
                 fread(&node, sizeof(image_node), 1, pf);
-//                fprintf(stderr, "- %llu %d %d\n", node.om_16i,
-//                                                  node.w, node.h);
                 int image_size = YUV_IMAGE_SIZE(node.w, node.h);
                 if (img_info->feat_repeater->find(node.om_16i) !=
                     img_info->feat_repeater->end()) { 

@@ -38,10 +38,9 @@ ImpOMFeature::~ImpOMFeature() {
  * remain it is test the discriminate of OM feature
  */
 bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h) {
-//    return ExtractFrame(data, w, h, 4);
     int n = 4;
     _arr_color = new uint8[n * n];
-    _arr_entropy = new uint8[n * n];
+   // _arr_entropy = new uint8[n * n];
 
     get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
     return true;

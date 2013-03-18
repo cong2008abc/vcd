@@ -18,17 +18,13 @@ const char *YUV = "/yuv/";
 const char *DB = "/db/";
 
 int open_db(char *db_path) {
-//    char log[128];
-//    strcpy(log, db_path);
-//    strcat(log, "om.log");
-
     frame_index = new vcd::IndexLRU(1024u * 500);
     strcpy(path, db_path);
 
     //new method
     omf_file = new vcd::File(db_path, "omf");
 
-    image_buffer = vcd::image_buffer_init(10, 4, "../feature_db/");
+    image_buffer = vcd::image_buffer_init(10, 1, db_path);
 
     return 0;
 }
@@ -45,10 +41,12 @@ int query_image(unsigned char *data, int w, int h) {
     frame->ExtractFeature(data, w, h);
 
     int status = frame_index->InsertThreadSafe(frame);
-    uint64 feature = frame->GetComprsFeature();
+    vcd::uint64 feature = frame->GetComprsFeature();
+//    fprintf(stderr, "get feature: %llu\n", feature);
     switch(status) {
         case vcd::REPEAT:
             vcd::insert_repeat_feature(feature);
+//            fprintf(stderr, "Repeat --\n");
         case vcd::NEW:
             omf_file->Append(&feature, sizeof(feature));
             //omf_file->Append(frame->GetOMStr());

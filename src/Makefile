@@ -21,8 +21,8 @@ LIBS := base/libbase.a feature/libfeature.a
 INCLUDE = -I./third_party
 #target = run_test_sa
 
-SRCS = feature_db.cc data_stream.cc \
-	   frame.cc frame_index.cc info_db.cc om_interface.cc \
+SRCS = feature_db.cc \
+	   frame.cc frame_index.cc om_interface.cc \
 	   thread_safe_index.cc utils.cc vcd_file.cc \
 	   imitation.cc image_buf.cc
 
@@ -39,7 +39,7 @@ endif
 OBJS = $(subst .cc,.o,$(SRCS))
 
 # unittest target
-UNITTEST = unittest_imagebuf
+UNITTEST = unittest_imagebuf unittest_ominterface
 LDFLAGS_TEST = -L./lib -lgtest
 #INCLUDE_TEST = -I./third_party
 
@@ -68,6 +68,17 @@ UNITTEST_IMAGEBUF_SRCS = image_buf.cc imitation.cc utils.cc		\
 						 unittest_imagebuf.cc
 UNITTEST_IMAGEBUF_OBJS = $(subst .cc,.o,$(UNITTEST_IMAGEBUF_SRCS))
 unittest_imagebuf: $(UNITTEST_IMAGEBUF_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS_TEST) $(LDFLAGS)
+
+#
+# generate unittest of imagebuf
+# 
+UNITTEST_OMINTERFACE_SRCS = feature_db.cc \
+						   	frame.cc frame_index.cc om_interface.cc \
+						    thread_safe_index.cc utils.cc vcd_file.cc \
+						    imitation.cc image_buf.cc unittest_ominterface.cc
+UNITTEST_OMINTERFACE_OBJS = $(subst .cc,.o,$(UNITTEST_OMINTERFACE_SRCS))
+unittest_ominterface: $(UNITTEST_OMINTERFACE_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS_TEST) $(LDFLAGS)
 
 #
