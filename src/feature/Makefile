@@ -12,27 +12,29 @@ HEADS = *.h
 OBJS = $(subst .cc,.o, $(SRCS))
 
 ROOT_DIR=..
-INCLUDE = -I$(ROOT_DIR) -I$(ROOT_DIR)/third_party
+INCLUDE = -I$(ROOT_DIR) -I$(ROOT_DIR)/third_party \
+		  -I$(ROOT_DIR)/third_party/opencv
 
 CC = g++
-CFLAGS = -fPIC `pkg-config --cflags opencv`
+CFLAGS = -fPIC
+CFLAGS += $(INCLUDE)
 CFLAGS += -g
 CFLAGS += -Wall
 LDFLAGS = -lpthread
 LDFLAGS_TEST = -L$(ROOT_DIR)/lib -lgtest -L$(ROOT_DIR)/base -lbase \
 			   `pkg-config --libs opencv`
 
-UNITTEST = unittest_om
+#UNITTEST = unittest_om
 
 all: $(LIB) $(UNITTEST)
 
 $(LIB):$(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 
-include $(SRCS:.cc=.d)
+#include $(SRCS:.cc=.d)
 
 %.o: %.cc
-	$(CC) $(CFLAGS) -c $< $(INCLUDE)
+	$(CC) $(CFLAGS) -c $< 
 
 %.d: %.cc
 	@set -e; rm -f $@; \

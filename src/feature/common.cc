@@ -28,6 +28,7 @@ bool cvt_YUV2RGB(const uint8 *data_, int w, int h, IplImage *rgb) {
     IplImage *hu = cvCreateImageHeader(cvSize(w/2, h/2), IPL_DEPTH_8U, 1); 
     IplImage *hv = cvCreateImageHeader(cvSize(w/2, h/2), IPL_DEPTH_8U, 1); 
 
+
     uint8 *data = const_cast<uint8*>(data_);
     cvSetData(y, data, w);
     cvSetData(hu, data + w * h, w / 2);

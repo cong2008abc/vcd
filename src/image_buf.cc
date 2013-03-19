@@ -17,6 +17,7 @@ struct image_tmp_info {
     int cur_buf_num;
     FILE *pf_cur;
     char path[64];
+
     
     // for buf save
     pthread_cond_t buf_cond;
@@ -194,7 +195,7 @@ void *thread_tmp_handler(void *arg) {
             continue;
         }
 
-        FILE *aft_pf = fopen(aft_name, "ab+");
+        FILE *aft_pf = fopen(aft_name, "wb+");
         if (aft_pf == NULL) {
             fprintf(stderr, "something terrible happens!\
                              couldn't open aft_db\n");
@@ -209,16 +210,21 @@ void *thread_tmp_handler(void *arg) {
         int k = 0;
         while (k++ < img_info->max_tmp_size) {
             int buf_num;
-            fread(&buf_num, sizeof(int), 1, pf);
+            int res;
+            res = fread(&buf_num, sizeof(int), 1, pf);
+            if (res != 1) continue;
+
             image_node node;
             uint8 *data_buf[320 * 160 * 3];
             for (int i = 0; i < buf_num; ++i) {
-                fread(&node, sizeof(image_node), 1, pf);
+                res = fread(&node, sizeof(image_node), 1, pf);
+                if (res != 1) continue;
                 int image_size = YUV_IMAGE_SIZE(node.w, node.h);
                 if (img_info->feat_repeater->find(node.om_16i) !=
                     img_info->feat_repeater->end()) { 
                     // TODO(zc) save this image
-                    fread(data_buf, sizeof(uint8), image_size, pf);
+                    res = fread(data_buf, sizeof(uint8), image_size, pf);
+                    if (res != image_size) continue;
 
                     fwrite(&node, sizeof(image_node), 1, aft_pf);
                     fwrite(data_buf, sizeof(uint8), image_size, aft_pf);

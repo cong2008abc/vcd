@@ -24,7 +24,13 @@ int open_db(char *db_path) {
     //new method
     omf_file = new vcd::File(db_path, "omf");
 
-    image_buffer = vcd::image_buffer_init(10, 1, db_path);
+    image_buffer = vcd::image_buffer_init(100, 3, db_path);
+
+    printf("****************************************\n");
+    printf("*\n");
+    printf("* om feature is runing!\n");
+    printf("*\n");
+    printf("****************************************\n");
 
     return 0;
 }
@@ -42,29 +48,21 @@ int query_image(unsigned char *data, int w, int h) {
 
     int status = frame_index->InsertThreadSafe(frame);
     vcd::uint64 feature = frame->GetComprsFeature();
-//    fprintf(stderr, "get feature: %llu\n", feature);
     switch(status) {
         case vcd::REPEAT:
             vcd::insert_repeat_feature(feature);
-//            fprintf(stderr, "Repeat --\n");
         case vcd::NEW:
             omf_file->Append(&feature, sizeof(feature));
-            //omf_file->Append(frame->GetOMStr());
             image_buffer->AppendImage(data, w, h, feature); 
             break;
         case vcd::EXIST:
+            delete frame;
             // do nothing
             break;
         default:
             break;
     }
 
-//    if (frame_index->InsertThreadSafe(frame) == 0) {
-//        omf_file->Append(frame->GetOMStr());
-//    } else {
-//        delete frame;
-//    }
-    
     return 0;
 }
 

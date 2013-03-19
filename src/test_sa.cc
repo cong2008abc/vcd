@@ -49,10 +49,11 @@ void test_hc_method(const char *path, cv::Mat *res) {
         return ;
     }
 
-    cv::Mat _src = cv::imread(path, 1);
+    cv::Mat _src = cv::imread(path);
     VLOG(0, "_src dim: %d", _src.dims);
 
     if (!_src.data) {
+        fprintf(stderr, "no data, %s\n", path);
         return;
     }
 
@@ -62,7 +63,7 @@ void test_hc_method(const char *path, cv::Mat *res) {
     cv::Mat src;
     cv::Mat roi = _src;
     resize_mat_by_width(roi, src, 120);
-    show_mat(src);
+//    show_mat(src);
 
     cv::Mat result;
     vcd::Saliency::Get(src, result, vcd::Saliency::RC);
@@ -74,7 +75,7 @@ void test_hc_method(const char *path, cv::Mat *res) {
         return;
     }
 
-    show_mat(result);
+//    show_mat(result);
     *res = result;
 }
 
@@ -98,8 +99,6 @@ void test_dir(const char *path) {
 }
 
 int main() {
-    printf("%s\n", CV_VERSION);
-    return 0;
     for (int i = 0; i < LIB_NUM; ++i) 
         test_dir(lib[i]);
 }

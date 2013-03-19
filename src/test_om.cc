@@ -12,7 +12,7 @@ const char *lib[] = {"../img/",
                      "/mnt/db/1/",
                      "/mnt/db/2/",
                      "/mnt/db/3/"};
-char db_path[] = "../test_om/";
+char db_path[] = "../feature_db/";
 unsigned char *img_data;
 int kMaxSize;
 

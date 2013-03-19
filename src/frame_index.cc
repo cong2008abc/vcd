@@ -90,9 +90,9 @@ int FrameIndexLRU::Insert(Frame *ptr) {
             }
         }
 
-//        if (t != vt->size()) {
-//            return EXIST;
-//        }
+        if (t != vt->size()) {
+            return EXIST;
+        }
 
         vt->push_back(ptr);
         frame_count_[key]++;
