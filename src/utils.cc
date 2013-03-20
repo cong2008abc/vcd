@@ -13,6 +13,7 @@ void show_image(const IplImage *src, const char *name) {
     cvNamedWindow(name, CV_WINDOW_AUTOSIZE);
     cvShowImage(name, src);
     cvWaitKey(0);
+    //cvDestroyWindow(name);
 }
 
 /*
@@ -199,9 +200,13 @@ IplImage *yuv2iplImage(const uint8* data, int w, int h) {
 }
 
 void show_yuv(const uint8* data, int w, int h) {
+//    IplImage *img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+//    vcd::cvt_YUV2RGB(data, w, h, img);
+//    show_image(img, "r");
+//    cvReleaseImage(&img);
     IplImage *img = yuv2iplImage(data, w, h);
-    show_image(img, "b");
-
+    show_image(img, "yuvbbb");
+    printf("ok");
     cvReleaseImage(&img);
 }
 

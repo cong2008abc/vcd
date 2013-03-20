@@ -27,7 +27,7 @@ bool Imitation::GetNextImg(uint8 *data, int buff_size, int *w, int *h) {
         }
 
         // if this file is not a pic, try next file
-        //fprintf(stderr, "%s\n", file.c_str());
+        fprintf(stderr, "%s\n", file.c_str());
         if (Imitation::ReadImg(file.c_str(), data, buff_size, w, h)) {
             break;
         }

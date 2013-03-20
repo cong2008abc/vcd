@@ -63,7 +63,7 @@ void test_hc_method(const char *path, cv::Mat *res) {
     cv::Mat src;
     cv::Mat roi = _src;
     resize_mat_by_width(roi, src, 120);
-//    show_mat(src);
+    show_mat(src);
 
     cv::Mat result;
     vcd::Saliency::Get(src, result, vcd::Saliency::RC);

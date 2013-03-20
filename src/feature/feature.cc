@@ -1,8 +1,8 @@
 #include "feature.h"
 #include "om.h"
 #include "common.h"
-#include "img_saliency.h"
 #include "utils.h"
+#include "img_saliency.h"
 #include <stdlib.h>
 #include <math.h>
 #include <cv.h>

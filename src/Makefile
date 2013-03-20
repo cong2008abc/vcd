@@ -6,11 +6,12 @@
 # 1 for current path static library
 # 2 for system dynamic library
 #
-OPENCV = 1
+OPENCV = OFFLINE
 
 CC = g++
 MAKE = make
 LIB_NAME = libom.so
+ROOT_DIR = .
 
 ################################################
 #
@@ -27,7 +28,11 @@ TESTS = $(EXEC) $(UNITTEST)
 # sub dir
 SUB_MAKE = sub_make
 
-all: $(SUB_MAKE) $(LIB_NAME) 
+ifeq ($(OPENCV), ONLINE)
+all: $(SUB_MAKE) $(LIB_NAME)
+else
+all: $(SUB_MAKE) $(LIB_NAME) $(EXEC)
+endif
 
 ################################################
 #
@@ -60,8 +65,8 @@ else
 endif
 CFLAGS += -Wall
 
-ifeq ($(OPENCV), 1)
-	CFLAGS += -I./third_party/opencv
+ifeq ($(OPENCV), ONLINE)
+	CFLAGS += -I$(ROOT_DIR)/third_party/opencv
 else
 	CFLAGS += `pkg-config --cflags opencv`
 endif
@@ -70,16 +75,18 @@ endif
 # linker
 #
 LDFLAGS = -lpthread
-ifeq ($(OPENCV), 1)
+ifeq ($(OPENCV), ONLINE)
 	# opencv libs
-	LDFLAGS += -L./lib -lopencv_features2d -lopencv_imgproc \
+	LDFLAGS += -L$(ROOT_DIR)/lib -lopencv_features2d -lopencv_imgproc \
 			   -lopencv_core \
-			   -lopencv_highgui -lopencv_ml \
+			   -lopencv_highgui #-lopencv_ml \
 			   -lopencv_video -lopencv_calib3d \
 			   -lopencv_objdetect -lopencv_contrib \
 			   -lopencv_legacy -lopencv_flann
 	# opencv 3rdparty libs
-	LDFLAGS += -lIlmImf -ljpeg -lpng -ltiff -lzlib -ljasper
+	#LDFLAGS += -lIlmImf -ljpeg -lpng -ltiff -ljasper
+	# fro zlib
+	LDFLAGS += -lz
 	# for time lib
 	LDFLAGS += -lrt
 	# for gtk
@@ -97,8 +104,8 @@ LIBS := base/libbase.a feature/libfeature.a
 SRCS = feature_db.cc \
 	   frame.cc frame_index.cc om_interface.cc \
 	   thread_safe_index.cc vcd_file.cc \
-	   image_buf.cc \
-	   imitation.cc utils.cc
+	   image_buf.cc 
+	   #imitation.cc utils.cc
 
 # get objs from srcs
 OBJS = $(subst .cc,.o,$(SRCS))
@@ -115,8 +122,11 @@ $(LIB_NAME): $(OBJS) $(LIBS)
 
 
 EXEC_LDFLAS = -L. -lom -Wl,-rpath=./ 
+EXEC_LDFLAS += `pkg-config --libs opencv`
+EXEC_LDFLAS += base/libbase.a feature/libfeature.a
+
 EXEC_SRCS = imitation.cc utils.cc
-#EXEC_OBJS = $(subst .cc,.o,$(EXEC_SRCS))
+EXEC_OBJS = $(subst .cc,.o,$(EXEC_SRCS))
 
 #
 # exec depends like this:

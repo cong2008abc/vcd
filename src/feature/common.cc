@@ -1,4 +1,5 @@
 #include "common.h"
+#include "utils.h"
 #include <cv.h>
 
 namespace vcd {
@@ -31,6 +32,7 @@ bool cvt_YUV2RGB(const uint8 *data_, int w, int h, IplImage *rgb) {
 
     uint8 *data = const_cast<uint8*>(data_);
     cvSetData(y, data, w);
+//    show_image(y, "y");
     cvSetData(hu, data + w * h, w / 2);
     cvSetData(hv, data + static_cast<int>(w * h * 1.25), w / 2);
 
@@ -66,6 +68,10 @@ bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h) {
     cvResize(comp_uu, comp_u);
     cvResize(comp_vv, comp_v);
 
+//    show_image(comp_yy, "yy");
+//    show_image(comp_u, "u");
+//    show_image(comp_v, "v");
+
     if (src->width * src->height * 3/2 >= nbuf) {
         return false;
     }
@@ -74,6 +80,7 @@ bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h) {
 
     int offset = 0;
     offset = get_ipl_data(comp_yy, 0, data);
+    //show_yuv(data, *w, *h);
     offset += get_ipl_data(comp_u, 0, data + offset);
     offset += get_ipl_data(comp_v, 0, data + offset);
     
