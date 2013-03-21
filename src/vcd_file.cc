@@ -87,6 +87,11 @@ bool File::Dump() {
         char tmp[128];    
         CreateName(tmp);
         pf_ = fopen(tmp, "w");
+        if (pf_ == NULL) {
+            fprintf(stderr, "Dump file %s error!\n",
+                            tmp);
+            return false;
+        }
     }
 
     fwrite(cache_, sizeof(char), kCacheSize - left_space_, pf_);

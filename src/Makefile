@@ -97,7 +97,7 @@ LIBS := base/libbase.a feature/libfeature.a
 SRCS = feature_db.cc \
 	   frame.cc frame_index.cc om_interface.cc \
 	   thread_safe_index.cc vcd_file.cc \
-	   image_buf.cc 
+	   image_buf.cc utils.cc
 	   #imitation.cc utils.cc
 
 # get objs from srcs
@@ -138,7 +138,7 @@ run_%: %.o $(EXEC_OBJS)
 	@echo
 
 # unittest linker
-LDFLAGS_TEST = -L./lib -lgtest
+LDFLAGS_TEST = lib/libgtest.a
 LDFLAGS_TEST += $(FFMPEG_LINK_FLAGS)
 
 # unittest cflags
@@ -151,7 +151,7 @@ UNITTEST_IMAGEBUF_SRCS = image_buf.cc imitation.cc utils.cc		\
 						 unittest_imagebuf.cc video_processor.cc
 UNITTEST_IMAGEBUF_OBJS = $(subst .cc,.o,$(UNITTEST_IMAGEBUF_SRCS))
 unittest_imagebuf: $(UNITTEST_IMAGEBUF_OBJS)
-	$(CC) -o $@ $^ $(LIBS) $(LDFLAGS_TEST) $(LDFLAGS)
+	$(CC) -o $@ $^ $(LIBS) $(LDFLAGS) $(LDFLAGS_TEST)
 
 #
 # generate unittest of imagebuf
@@ -163,7 +163,7 @@ UNITTEST_OMINTERFACE_SRCS = feature_db.cc \
 							video_processor.cc unittest_ominterface.cc
 UNITTEST_OMINTERFACE_OBJS = $(subst .cc,.o,$(UNITTEST_OMINTERFACE_SRCS))
 unittest_ominterface: $(UNITTEST_OMINTERFACE_OBJS)
-	$(CC) -o $@ $^ $(LIBS) $(LDFLAGS_TEST) $(LDFLAGS)
+	$(CC) -o $@ $^ $(LIBS) $(LDFLAGS) $(LDFLAGS_TEST)
 
 
 ################################################

@@ -48,7 +48,6 @@ void test_dir(const char *path) {
             break;
         }
 
-        show_yuv(img_data, w, h);
         query_image(img_data, w, h);
     }
 }

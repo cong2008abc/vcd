@@ -206,7 +206,7 @@ void show_yuv(const uint8* data, int w, int h) {
 //    cvReleaseImage(&img);
     IplImage *img = yuv2iplImage(data, w, h);
     show_image(img, "yuvbbb");
-    printf("ok");
+//    printf("ok");
     cvReleaseImage(&img);
 }
 
