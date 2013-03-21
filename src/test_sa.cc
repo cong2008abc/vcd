@@ -16,6 +16,7 @@ const char *lib[] = {
                      "/mnt/db/2/",
                      "/mnt/db/3/"};
 const int VIDEO_LIB_NUM = 2;
+const char *video_lib2[] = {"/mnt"};
 const char *video_lib[] = {"/mnt/share/queryVideos",
                            "/mnt/share/libVideos/"};
 const int kMaxSize = 1024 * 1024 * 3;
@@ -61,21 +62,21 @@ int test_video_saliency(uint8 *data, int w, int h) {
 
     //show_image(img_rgb, "orig");
     cv::Mat img = img_rgb;
-    cv::Rect margin;
-    remove_margin(img, &margin);
-//
-//    // 2= extract the main rectangle on rgb image
-    cv::Mat roi(img, margin);
-//    cv::Mat roi = img;
+//    cv::Rect margin;
+//    remove_margin(img, &margin);
+////
+////    // 2= extract the main rectangle on rgb image
+//    cv::Mat roi(img, margin);
+    cv::Mat roi = img;
     cv::Rect rect;
     cv::Mat saliency_map;
     vcd::Saliency::Get(roi, saliency_map);    
     vcd::Saliency::ExtractView(saliency_map, rect);
 
-    show_mat(roi);
+    //show_mat(roi);
     draw_rectangle(img, rect);
 
-    show_mat(img, 5);
+    show_mat(img, 500);
 
     //cvReleaseImage(&img_rgb);
     return 1;
@@ -91,6 +92,6 @@ int main() {
 //    for (int i = 0; i < LIB_NUM; ++i) 
 //        test_dir(lib[i]);
     for (int i = 0; i < VIDEO_LIB_NUM; ++i) {
-        test_dir(video_lib[i]);
+        test_dir(video_lib2[i]);
     }
 }

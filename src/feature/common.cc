@@ -38,7 +38,7 @@ bool cvt_YUV2RGB(const uint8 *data_, int w, int h, cv::Mat *rgb) {
     cv::merge(channel, 3, *rgb);
 
     cv::cvtColor(*rgb, *rgb, CV_YUV2BGR);
-    show_mat(*rgb);
+    //show_mat(*rgb);
     return true;
 }
 

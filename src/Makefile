@@ -7,6 +7,7 @@
 # 2 for system dynamic library
 #
 OPENCV = OFFLINE
+#OPENCV = ONLINE
 
 CC = g++
 MAKE = make
@@ -113,10 +114,13 @@ $(LIB_NAME): $(OBJS) $(LIBS)
 #
 #
 
-FFMPEG_LINK_FLAGS = -lavcodec -lavformat -lavutil -lswscale
+FFMPEG_LINK_FLAGS = -L/usr/local/lib -lavcodec -lavformat -lavutil -lswscale
 
-EXEC_LDFLAS = -L. -lom -Wl,-rpath=./ 
-EXEC_LDFLAS += `pkg-config --libs opencv`
+EXEC_LDFLAS = -L. -lom -Wl,-rpath=./:/usr/local/lib
+#EXEC_LDFLAS += `pkg-config --libs opencv`
+EXEC_LDFLAS += -L/usr/local/lib -lopencv_features2d -lopencv_imgproc \
+		   -lopencv_core \
+		   -lopencv_highgui
 EXEC_LDFLAS += base/libbase.a feature/libfeature.a
 EXEC_LDFLAS += $(FFMPEG_LINK_FLAGS)
 
