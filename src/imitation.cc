@@ -35,6 +35,24 @@ bool Imitation::GetNextImg(uint8 *data, int buff_size, int *w, int *h) {
     return true;
 }
 
+bool Imitation::GetVideo(process_func func) {
+    std::string file;
+    while (1) {
+        if (_img_db->GetNextFile(&file) == false) {
+            break;
+        }
+
+        fprintf(stderr, "process %s\n", file.c_str());
+        Imitation::ProcessVideo(file.c_str(), func);
+    }
+    return true;
+}
+
+bool Imitation::ProcessVideo(const char *path, process_func func) {
+    VideoProcessor pro; 
+    return pro.ProcessVideo(path, func);
+}
+
 bool Imitation::ReadImg(const char *path, uint8 *data, int buff_size,
                         int *w, int *h) {
     return simulate_input(path, data, buff_size, w, h);

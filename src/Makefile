@@ -31,7 +31,7 @@ SUB_MAKE = sub_make
 ifeq ($(OPENCV), ONLINE)
 all: $(SUB_MAKE) $(LIB_NAME)
 else
-all: $(SUB_MAKE) $(LIB_NAME) $(EXEC)
+all: $(SUB_MAKE) $(LIB_NAME) $(EXEC) $(UNITTEST)
 endif
 
 ################################################
@@ -79,18 +79,11 @@ ifeq ($(OPENCV), ONLINE)
 	# opencv libs
 	LDFLAGS += -L$(ROOT_DIR)/lib -lopencv_features2d -lopencv_imgproc \
 			   -lopencv_core \
-			   -lopencv_highgui #-lopencv_ml \
-			   -lopencv_video -lopencv_calib3d \
-			   -lopencv_objdetect -lopencv_contrib \
-			   -lopencv_legacy -lopencv_flann
-	# opencv 3rdparty libs
-	#LDFLAGS += -lIlmImf -ljpeg -lpng -ltiff -ljasper
+			   -lopencv_highgui
 	# fro zlib
 	LDFLAGS += -lz
 	# for time lib
 	LDFLAGS += -lrt
-	# for gtk
-	#LDFLAGS += `pkg-config --libs gtk+-2.0`
 else 
 	LDFLAGS += `pkg-config --libs opencv`
 endif
@@ -120,26 +113,33 @@ $(LIB_NAME): $(OBJS) $(LIBS)
 #
 #
 
+FFMPEG_LINK_FLAGS = -lavcodec -lavformat -lavutil -lswscale
 
 EXEC_LDFLAS = -L. -lom -Wl,-rpath=./ 
 EXEC_LDFLAS += `pkg-config --libs opencv`
 EXEC_LDFLAS += base/libbase.a feature/libfeature.a
+EXEC_LDFLAS += $(FFMPEG_LINK_FLAGS)
 
-EXEC_SRCS = imitation.cc utils.cc
+EXEC_SRCS = imitation.cc utils.cc video_processor.cc
 EXEC_OBJS = $(subst .cc,.o,$(EXEC_SRCS))
 
 #
 # exec depends like this:
 #
 # run_test_om: test_om.o
+#run_test_om: test_om.o $(EXEC_OBJS)
+#	@echo LINK Exec [$@]
+#	$(CC) -o $@ $^ $(EXEC_LDFLAS)
+#	@echo
+
 run_%: %.o $(EXEC_OBJS)
 	@echo LINK Exec [$@]
 	$(CC) -o $@ $^ $(EXEC_LDFLAS)
 	@echo
 
-
 # unittest linker
 LDFLAGS_TEST = -L./lib -lgtest
+LDFLAGS_TEST += $(FFMPEG_LINK_FLAGS)
 
 # unittest cflags
 CFLAGS_TEST = -I./third_party/
@@ -148,7 +148,7 @@ CFLAGS_TEST = -I./third_party/
 # generate unittest of imagebuf
 # 
 UNITTEST_IMAGEBUF_SRCS = image_buf.cc imitation.cc utils.cc		\
-						 unittest_imagebuf.cc
+						 unittest_imagebuf.cc video_processor.cc
 UNITTEST_IMAGEBUF_OBJS = $(subst .cc,.o,$(UNITTEST_IMAGEBUF_SRCS))
 unittest_imagebuf: $(UNITTEST_IMAGEBUF_OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(LDFLAGS_TEST) $(LDFLAGS)
@@ -159,7 +159,8 @@ unittest_imagebuf: $(UNITTEST_IMAGEBUF_OBJS)
 UNITTEST_OMINTERFACE_SRCS = feature_db.cc \
 						   	frame.cc frame_index.cc om_interface.cc \
 						    thread_safe_index.cc utils.cc vcd_file.cc \
-						    imitation.cc image_buf.cc unittest_ominterface.cc
+						    imitation.cc image_buf.cc \
+							video_processor.cc unittest_ominterface.cc
 UNITTEST_OMINTERFACE_OBJS = $(subst .cc,.o,$(UNITTEST_OMINTERFACE_SRCS))
 unittest_ominterface: $(UNITTEST_OMINTERFACE_OBJS)
 	$(CC) -o $@ $^ $(LIBS) $(LDFLAGS_TEST) $(LDFLAGS)

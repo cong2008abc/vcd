@@ -5,15 +5,18 @@
 
 namespace vcd {
 
+typedef int (*process_func)(unsigned char*, int, int);
+
 class VideoProcessor {
 public:
     VideoProcessor();
     ~VideoProcessor();
 
-    bool OpenVideo(const char *path, ...);
+    bool ProcessVideo(const char *path, process_func fun);
 
 private:
     DISALLOW_COPY_AND_ASSIAGN(VideoProcessor); 
+    
 };
 } // namespace vcd
 

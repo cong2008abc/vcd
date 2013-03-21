@@ -10,6 +10,7 @@
 #define _IMITATION_H_
 
 #include "define.h"
+#include "video_processor.h"
 
 namespace cv {
     class Mat;
@@ -25,7 +26,9 @@ public:
 
     bool OpenJpgDb(const char *path);
     bool GetNextImg(uint8 *data, int buff_size, int *w, int *h);
+    bool GetVideo(process_func f);
 
+    static bool ProcessVideo(const char *path, process_func f);
     static bool ReadImg(const char *path, uint8* data, int buff_size,
                         int *w, int *h);
     static bool CvtYUV2Mat(const uint8 *data, int w, int h, cv::Mat*);

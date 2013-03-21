@@ -40,18 +40,19 @@ next_loop:
     return true;
 }
 
-int read_video(const char *path) {
+int read_video(const char *path, process_func process) {
     // Register all formats and codecs
     av_register_all();
 
     // open video file
     AVFormatContext *pformat_ctx = avformat_alloc_context();
     if (avformat_open_input(&pformat_ctx, path, NULL, NULL) != 0) {
+        fprintf(stderr, "open video %s error!\n", path);
         return -1;      // open error!
     }
 
     // retrieve stream infor
-    if (av_find_stream_info(pformat_ctx) < 0) {
+    if (avformat_find_stream_info(pformat_ctx, NULL) < 0) {
         return -1;
     }
 
@@ -59,8 +60,8 @@ int read_video(const char *path) {
 
     // find the first video stream
     int video_stream = -1;
-    for (int i = 0; i < pformat_ctx->nb_streams; ++i) {
-        if (pformat_ctx->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO) {
+    for (size_t i = 0; i < pformat_ctx->nb_streams; ++i) {
+        if (pformat_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
             video_stream = i;
             break;
         }
@@ -83,7 +84,7 @@ int read_video(const char *path) {
         pcodec_ctx->flags |= CODEC_FLAG_TRUNCATED;
     }
     // open codec
-    if (avcodec_open(pcodec_ctx, pcodec) < 0) {
+    if (avcodec_open2(pcodec_ctx, pcodec, NULL) < 0) {
         return -1;
     }
 
@@ -112,12 +113,11 @@ int read_video(const char *path) {
         int offset = 0;
         int width = pcodec_ctx->width;
         int height = pcodec_ctx->height;
-        printf("%d\n", i++);
+//        printf("%d\n", i++);
 
         for (int c = 0; c < 3; ++c) {
             uint8_t *ptr = pframe->data[c];
             int linesize = pframe->linesize[c];
-            printf("%d\n",linesize);
             if (c == 1) {
                 width >>= 1;
                 height >>= 1;
@@ -128,9 +128,9 @@ int read_video(const char *path) {
                 offset += width;
             }
         }
-        show_yuv_colorful(buffer, width * 2, height * 2);
+        //show_yuv_colorful(buffer, width * 2, height * 2);
 //        show_yuv(buffer, width * 2, height * 2);
-        // do somthing!.
+        (*process)(buffer, width * 2, height * 2);
     }
 
     delete [] buffer;
@@ -138,18 +138,29 @@ int read_video(const char *path) {
     av_free(pframe_rgb);
 
     avcodec_close(pcodec_ctx);
-    av_close_input_file(pformat_ctx);
+    avformat_close_input(&pformat_ctx);
     
     return 0;
 }
 
+VideoProcessor::VideoProcessor() {
+}
+
+VideoProcessor::~VideoProcessor() {
+}
+
+bool VideoProcessor::ProcessVideo(const char *path, process_func f) {
+    read_video(path, f);
+    return true;
+}
+
 } // namespace vcd
 
-int main(int argc, char **argv) {
-    if (argc != 2) {
-        return 1;
-    }
-    vcd::read_video(argv[1]);
-
-    return 0;
-}
+//int main(int argc, char **argv) {
+//    if (argc != 2) {
+//        return 1;
+//    }
+//    vcd::read_video(argv[1]);
+//
+//    return 0;
+//}
