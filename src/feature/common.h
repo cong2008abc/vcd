@@ -67,6 +67,7 @@ namespace vcd {
 
 int get_ipl_data(const IplImage *src, int nChannel, uint8 *data);
 
+bool cvt_YUV2RGB(const uint8 *data, int w, int h, cv::Mat *rgb);
 bool cvt_YUV2RGB(const uint8 *data, int w, int h, IplImage *rgb);
 
 bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h);

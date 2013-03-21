@@ -16,25 +16,6 @@ char db_path[] = "../feature_db/";
 unsigned char *img_data;
 int kMaxSize;
 
-//void test_dir(const char *path) {
-//    struct dirent **namelist;
-//    int file_num = scandir(path, &namelist, NULL, alphasort);
-//
-//    char full_name[128];
-//    for (int i = 0; i < file_num; ++i) {
-//        sprintf(full_name, "%s%s", path, namelist[i]->d_name);
-//        printf("%s\n", full_name);
-//
-//        int w, h;
-//        if (!simulate_input(full_name, img_data, kMaxSize, &w, &h)) {
-//            continue;
-//        }
-//
-//        //printf("Load OK!\n");
-//        query_image(img_data, w, h);
-//    }
-//}
-
 void test_dir(const char *path) {
     vcd::Imitation imgs;
     if (imgs.OpenJpgDb(path) == false) {

@@ -459,7 +459,7 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Rect &view) {
     int w = 2 * delta * static_cast<int>(_w_sum / CM);
     int h = 2 * delta * static_cast<int>(_h_sum / CM);
 
-    fprintf(stderr, "--result x0:%d y0:%d w:%d h:%d\n", x0, y0, w, h);
+//    fprintf(stderr, "--result x0:%d y0:%d w:%d h:%d\n", x0, y0, w, h);
 
     view.x = x0 - w / 2;
     view.y = y0 - h / 2;

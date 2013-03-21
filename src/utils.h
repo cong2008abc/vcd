@@ -17,10 +17,10 @@ void show_yuv_colorful(const uint8 *data, int w, int h);
 void show_yuv(const uint8* data, int w, int h);
 void show_yuv_and_path(const uint8* data, int w, int h, const char *path);
 
-inline void show_mat(const cv::Mat &pic) {
+inline void show_mat(const cv::Mat &pic, int second = 0) {
     cv::namedWindow("mat", CV_WINDOW_AUTOSIZE);
     cv::imshow("mat", pic);
-    cv::waitKey(0);
+    cv::waitKey(second);
 }
 
 /*
@@ -57,5 +57,8 @@ inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst, int max_width 
     }
 }
 
+inline void draw_rectangle(cv::Mat &mat, const cv::Rect &rect) {
+    cv::rectangle(mat, rect, cv::Scalar(0, 0, 255));
+}
     
 #endif

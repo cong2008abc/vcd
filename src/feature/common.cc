@@ -23,6 +23,25 @@ int get_ipl_data(const IplImage *src, int nChannel, uint8 *data) {
     return idx;
 }
 
+bool cvt_YUV2RGB(const uint8 *data_, int w, int h, cv::Mat *rgb) {
+    uint8 *data = const_cast<uint8*>(data_);
+    cv::Mat channel[3];
+
+    cv::Mat yy(h, w, CV_8UC1, data, w);
+    cv::Mat u(h / 2, w / 2, CV_8UC1, data + w * h, w / 2);
+    cv::Mat v(h / 2, w / 2, CV_8UC1, data + w * h * 5 / 4, w / 2);
+
+    channel[0] = yy;
+    cv::resize(u, channel[1], yy.size(), cv::INTER_CUBIC);
+    cv::resize(v, channel[2], yy.size(), cv::INTER_CUBIC);
+
+    cv::merge(channel, 3, *rgb);
+
+    cv::cvtColor(*rgb, *rgb, CV_YUV2BGR);
+    show_mat(*rgb);
+    return true;
+}
+
 bool cvt_YUV2RGB(const uint8 *data_, int w, int h, IplImage *rgb) {
     IplImage *y = cvCreateImageHeader(cvSize(w, h), IPL_DEPTH_8U, 1); 
     IplImage *u = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1); 
