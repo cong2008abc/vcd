@@ -24,12 +24,12 @@ inline T vecSqrDist3(const cv::Vec<T, 3> &v1, const cv::Vec<T, 3> &v2) {
     return sqr(v1[0] - v2[0]) + sqr(v1[1] - v2[1]) + sqr(v1[2] - v2[2]);
 }
 
-template<class T1, class T2>
-inline void operator /= (cv::Vec<T1, 3> &v1, T2 v2) {
-    v1[0] /= v2;
-    v1[1] /= v2;
-    v1[2] /= v2;
-}
+//template<class T1, class T2>
+//inline void operator /= (cv::Vec<T1, 3> &v1, T2 v2) {
+//    v1[0] /= v2;
+//    v1[1] /= v2;
+//    v1[2] /= v2;
+//}
 
 template<class T>
 inline T pntSqrDist(const cv::Point_<T> &p1, const cv::Point_<T> &p2) {

@@ -6,7 +6,8 @@
 # 1 for current path static library
 # 2 for system dynamic library
 #
-OPENCV = OFFLINE
+#OPENCV = OFFLINE
+#OPENCV = ONLINE
 
 CC = g++
 MAKE = make
@@ -28,25 +29,16 @@ TESTS = $(EXEC) $(UNITTEST)
 # sub dir
 SUB_MAKE = sub_make
 
-ifeq ($(OPENCV), ONLINE)
-all: $(SUB_MAKE) $(LIB_NAME)
-else
-all: $(SUB_MAKE) $(LIB_NAME) $(EXEC) $(UNITTEST)
+ALL = $(SUB_MAKE) $(LIB_NAME)
+ifneq ($(OPENCV), ONLINE)
+	ALL += $(EXEC)
 endif
 
-################################################
-#
-# first make the subdir to get the libs
-#
-#
-.PHONY: sub_make
-sub_make:
-	for dir in $(SUBDIRS);\
-	do $(MAKE) -C $$dir all || exit 1;\
-	done
-# sub dirs
-SUBDIRS := base feature
+ifeq ($(TEST), ON)
+	ALL += $(UNITTEST)
+endif
 
+all: $(ALL)
 
 ################################################
 #
@@ -58,10 +50,11 @@ SUBDIRS := base feature
 #
 CFLAGS = -fPIC 
 # whether debug
-ifeq ($(DEBUG), y)
-	CFLAGS += -g
-else
+ifeq ($(OPENCV), ONLINE)
 	CFLAGS += -O2
+else
+	CFLAGS += -g
+	CFLAGS += -DDEBUG
 endif
 CFLAGS += -Wall
 
@@ -97,7 +90,7 @@ LIBS := base/libbase.a feature/libfeature.a
 SRCS = feature_db.cc \
 	   frame.cc frame_index.cc om_interface.cc \
 	   thread_safe_index.cc vcd_file.cc \
-	   image_buf.cc utils.cc
+	   image_buf.cc
 	   #imitation.cc utils.cc
 
 # get objs from srcs
@@ -106,6 +99,19 @@ OBJS = $(subst .cc,.o,$(SRCS))
 $(LIB_NAME): $(OBJS) $(LIBS)
 	$(CC) -shared -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
+################################################
+#
+# first make the subdir to get the libs
+#
+#
+SUBDIRS := base feature
+.PHONY: sub_make
+sub_make:
+	for dir in $(SUBDIRS);\
+	do $(MAKE) -C $$dir OPECV=$(OPECV) all || exit 1;\
+	done
+# sub dirs
+
 
 ###############################################
 #
@@ -113,10 +119,13 @@ $(LIB_NAME): $(OBJS) $(LIBS)
 #
 #
 
-FFMPEG_LINK_FLAGS = -lavcodec -lavformat -lavutil -lswscale
+FFMPEG_LINK_FLAGS = -L/usr/local/lib -lavcodec -lavformat -lavutil -lswscale
 
-EXEC_LDFLAS = -L. -lom -Wl,-rpath=./ 
-EXEC_LDFLAS += `pkg-config --libs opencv`
+EXEC_LDFLAS = -L. -lom -Wl,-rpath=./:/usr/local/lib
+#EXEC_LDFLAS += `pkg-config --libs opencv`
+EXEC_LDFLAS += -L/usr/local/lib -lopencv_features2d -lopencv_imgproc \
+		   -lopencv_core \
+		   -lopencv_highgui
 EXEC_LDFLAS += base/libbase.a feature/libfeature.a
 EXEC_LDFLAS += $(FFMPEG_LINK_FLAGS)
 

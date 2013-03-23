@@ -1,6 +1,6 @@
 #include "base/logging.h"
 #include "gtest/gtest.h"
-#include "utils.h"
+#include "../utils.h"
 #include "om.h"
 #include <cv.h>
 #include <highgui.h>

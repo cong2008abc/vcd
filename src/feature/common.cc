@@ -1,5 +1,5 @@
 #include "common.h"
-#include "utils.h"
+#include <highgui.h>
 #include <cv.h>
 
 namespace vcd {

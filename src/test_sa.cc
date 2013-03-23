@@ -16,6 +16,7 @@ const char *lib[] = {
                      "/mnt/db/2/",
                      "/mnt/db/3/"};
 const int VIDEO_LIB_NUM = 2;
+const char *video_lib2[] = {"/mnt"};
 const char *video_lib[] = {"/mnt/share/queryVideos",
                            "/mnt/share/libVideos/"};
 const int kMaxSize = 1024 * 1024 * 3;
@@ -57,21 +58,17 @@ void test_hc_method(const char *path, cv::Mat *res) {
 }
 
 int test_video_saliency(uint8 *data, int w, int h) {
-//    show_yuv(data, w, h);
     // 1= cvt the yuv data to rgb
     cv::Mat img_rgb;
     if (vcd::cvt_YUV2RGB(data, w, h, &img_rgb) == false) {
         return 1;
     }
 
-//    printf("?? %d\n", img_rgb.channels());
-
-    //show_image(img_rgb, "orig");
     cv::Mat img = img_rgb;
-//    cv::Rect margin;
-//    remove_margin(img, &margin);
-//////
-//////    // 2= extract the main rectangle on rgb image
+    cv::Rect margin;
+    remove_margin(img, &margin);
+
+    // 2= extract the main rectangle on rgb image
 //    cv::Mat roi(img, margin);
     cv::Mat roi = img;
     resize_mat_by_width(roi, roi, 320);
@@ -82,9 +79,7 @@ int test_video_saliency(uint8 *data, int w, int h) {
         return 1;
     }
 
-//    show_mat(roi);
     draw_rectangle(roi, rect);
-
     show_mat(roi, 2);
 
     return 0;

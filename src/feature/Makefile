@@ -7,24 +7,28 @@ LIB = libfeature.a
 RM = rm -rf
 SRCS = color_hist.cc feature.cc img_saliency.cc om.cc \
 	   segment_image.cc common.cc
-
 HEADS = *.h
 OBJS = $(subst .cc,.o, $(SRCS))
 
-ROOT_DIR=..
-INCLUDE = -I$(ROOT_DIR) -I$(ROOT_DIR)/third_party \
-		  -I$(ROOT_DIR)/third_party/opencv
-
 CC = g++
-CFLAGS = -fPIC
-CFLAGS += $(INCLUDE)
-CFLAGS += -g
-CFLAGS += -Wall
-LDFLAGS = -lpthread
-LDFLAGS_TEST = -L$(ROOT_DIR)/lib -lgtest -L$(ROOT_DIR)/base -lbase \
-			   `pkg-config --libs opencv`
+ROOT_DIR=..
 
-#UNITTEST = unittest_om
+INCLUDE = -I$(ROOT_DIR)/third_party \
+		  -I$(ROOT_DIR)
+ifeq ($(OPENCV), ONLINE)
+	INCLUDE += -I$(ROOT_DIR)/third_party/opencv
+else
+	INCLUDE += `pkg-config --cflags opencv`
+endif
+
+CFLAGS += -fPIC -Wall
+ifeq ($(OPENCV), ONLINE)
+	CFLAGS += -O2
+else
+	CFLAGS += -g
+	CFLAGS += -DDEBUG
+endif
+CFLAGS += $(INCLUDE)
 
 all: $(LIB) $(UNITTEST)
 
@@ -41,6 +45,9 @@ $(LIB):$(OBJS)
 	$(CC) -MM $(CFLAGS) $(INCLUDE) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
+
+LDFLAGS_TEST = -L$(ROOT_DIR)/lib -lgtest -L$(ROOT_DIR)/base -lbase \
+			   `pkg-config --libs opencv`
 
 unittest_om: unittest_om.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB) $(LDFLAGS_TEST)

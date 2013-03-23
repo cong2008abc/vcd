@@ -103,24 +103,14 @@ bool check_border(const cv::Mat &row) {
 
     int each_size = row.cols / k_n_border_split;
     int ok = 0;
-    //float dev[k_n_border_split];
     for (int i = 0; i < k_n_border_split; ++i) {
         cv::Mat roi(row, cv::Rect(each_size * i, 0, each_size, 1));
         cv::Scalar std_dev, m; 
-        cv::_OutputArray ar = std_dev;
-        //const cv::Mat p = roi;
-        //cv::_InputArray oar_ = p;
-        //cv::_OutputArray oar = oar_;
-        cv::Size sz = ar.sz;
-        //printf("??? %d\n", oar.fixedSize());
-        printf("??? %d %d %d %d\n", sz.width, sz.height, ar.fixedSize(), ar.fixedType());
         cv::meanStdDev(roi, m, std_dev);
         if (std_dev.val[0] < k_ent_thres) {
             ok++;
         }
-    //    dev[i] = std_dev.val[0];
     }
-    //VLOG(1, "%d %f %f %f %f %f\n", ok, dev[0], dev[1], dev[2], dev[3], dev[4]);
     if (ok > k_n_border_split / 2) {
         return true;
     } else {
@@ -177,7 +167,7 @@ void remove_margin(const cv::Mat &data, cv::Rect *res) {
     }
     right = i;
 
-    VLOG(1, "%d %d %d %d", left, top, right, bottom);
+    //VLOG(1, "%d %d %d %d", left, top, right, bottom);
 
     res->x = left;
     res->y = top;
