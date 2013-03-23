@@ -107,6 +107,13 @@ bool check_border(const cv::Mat &row) {
     for (int i = 0; i < k_n_border_split; ++i) {
         cv::Mat roi(row, cv::Rect(each_size * i, 0, each_size, 1));
         cv::Scalar std_dev, m; 
+        cv::_OutputArray ar = std_dev;
+        //const cv::Mat p = roi;
+        //cv::_InputArray oar_ = p;
+        //cv::_OutputArray oar = oar_;
+        cv::Size sz = ar.sz;
+        //printf("??? %d\n", oar.fixedSize());
+        printf("??? %d %d %d %d\n", sz.width, sz.height, ar.fixedSize(), ar.fixedType());
         cv::meanStdDev(roi, m, std_dev);
         if (std_dev.val[0] < k_ent_thres) {
             ok++;

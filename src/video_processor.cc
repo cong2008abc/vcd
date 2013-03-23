@@ -56,7 +56,7 @@ int read_video(const char *path, process_func process) {
         return -1;
     }
 
-    av_dump_format(pformat_ctx, 0, path, false);
+    //av_dump_format(pformat_ctx, 0, path, false);
 
     // find the first video stream
     int video_stream = -1;
@@ -113,7 +113,7 @@ int read_video(const char *path, process_func process) {
         int offset = 0;
         int width = pcodec_ctx->width;
         int height = pcodec_ctx->height;
-        if ((i++) % 20 != 0) {
+        if ((i++) % 50 != 0) {
             continue;
         }
 //        printf("%d\n", i++);

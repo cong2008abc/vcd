@@ -36,9 +36,14 @@ void test_hc_method(const char *path, cv::Mat *res) {
     }
 
     cv::Mat src;
-    cv::Mat roi = _src;
+//    cv::Mat roi = _src;
+    cv::Mat img = _src;
+    cv::Rect margin;
+    remove_margin(img, &margin);
+
+    cv::Mat roi(img, margin);
     resize_mat_by_width(roi, src, 320);
-    //show_mat(src);
+    show_mat(src);
 
     cv::Mat result;
     vcd::Saliency::Get(src, result, vcd::Saliency::RC);
@@ -56,29 +61,33 @@ int test_video_saliency(uint8 *data, int w, int h) {
     // 1= cvt the yuv data to rgb
     cv::Mat img_rgb;
     if (vcd::cvt_YUV2RGB(data, w, h, &img_rgb) == false) {
-        return false;
+        return 1;
     }
+
+//    printf("?? %d\n", img_rgb.channels());
 
     //show_image(img_rgb, "orig");
     cv::Mat img = img_rgb;
-    cv::Rect margin;
-    remove_margin(img, &margin);
-//
-//    // 2= extract the main rectangle on rgb image
-    cv::Mat roi(img, margin);
-//    cv::Mat roi = img;
+//    cv::Rect margin;
+//    remove_margin(img, &margin);
+//////
+//////    // 2= extract the main rectangle on rgb image
+//    cv::Mat roi(img, margin);
+    cv::Mat roi = img;
+    resize_mat_by_width(roi, roi, 320);
     cv::Rect rect;
     cv::Mat saliency_map;
     vcd::Saliency::Get(roi, saliency_map);    
-    vcd::Saliency::ExtractView(saliency_map, rect);
+    if (vcd::Saliency::ExtractView(saliency_map, rect) == false) {
+        return 1;
+    }
 
-    show_mat(roi);
-    draw_rectangle(img, rect);
+//    show_mat(roi);
+    draw_rectangle(roi, rect);
 
-    show_mat(img, 5);
+    show_mat(roi, 2);
 
-    //cvReleaseImage(&img_rgb);
-    return 1;
+    return 0;
 }
 
 void test_dir(const char *path) {
@@ -87,10 +96,18 @@ void test_dir(const char *path) {
     imi.GetVideo(test_video_saliency);
 }
 
-int main() {
+void test_single_pic(const char *path) {
+    cv::Mat mat;
+    test_hc_method(path, &mat);
+    show_mat(mat);
+}
+
+int main(int argc, char **argv) {
+    test_dir(argv[1]);
+//    test_single_pic("../img/1.jpg");
 //    for (int i = 0; i < LIB_NUM; ++i) 
 //        test_dir(lib[i]);
-    for (int i = 0; i < VIDEO_LIB_NUM; ++i) {
-        test_dir(video_lib[i]);
-    }
+//    for (int i = 0; i < VIDEO_LIB_NUM; ++i) {
+//        test_dir(video_lib[i]);
+//    }
 }

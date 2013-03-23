@@ -414,6 +414,10 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Rect &view) {
         CM += *t++;
     }
 
+    if (CM == 0) {
+        return false;
+    }
+
     // precalc the sum of the cols and rows,
     int *sum_cols = new int[src->cols];
     int *sum_rows = new int[src->rows];
