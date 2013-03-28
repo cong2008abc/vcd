@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "imitation.h"
+#include "base/vcd_dir.h"
 #include "feature/common.h"
 #include "feature/img_saliency.h"
 #include "base/logging.h"
@@ -29,7 +30,7 @@ void test_hc_method(const char *path, cv::Mat *res) {
     }
 
     cv::Mat _src = cv::imread(path);
-    VLOG(0, "_src dim: %d", _src.dims);
+    //VLOG(0, "_src dim: %d", _src.dims);
 
     if (!_src.data) {
         fprintf(stderr, "no data, %s\n", path);
@@ -43,18 +44,35 @@ void test_hc_method(const char *path, cv::Mat *res) {
     remove_margin(img, &margin);
 
     cv::Mat roi(img, margin);
-    resize_mat_by_width(roi, src, 320);
-    show_mat(src);
+    //roi = img;
+    src = roi;
+    //cv::Mat roi = _src;
+    //resize_mat_by_width(roi, src, 320);
+    //show_mat(src);
 
     cv::Mat result;
+    cv::Rect rect;
     vcd::Saliency::Get(src, result, vcd::Saliency::RC);
-    vcd::Saliency::Evaluate(result, result);
+    vcd::Saliency::ExtractView(result, rect);
+    //vcd::Saliency::Evaluate(result, result);
 
-    if (!result.data) {
-        return;
-    }
+    rect.x += margin.x;
+    rect.y += margin.y;
 
-    *res = result;
+    draw_rectangle(_src, rect);
+    //resize_mat_by_height(_src, _src, 160);
+    show_mat(_src);
+
+    char sname[128];
+    sprintf(sname, "%s_2.jpg", path);
+    imwrite(sname, _src);
+//    show_mat(result);
+//    if (!result.data) {
+//        return;
+//    }
+    //show_mat(result);
+
+    //*res = result;
 }
 
 int test_video_saliency(uint8 *data, int w, int h) {
@@ -91,6 +109,19 @@ void test_dir(const char *path) {
     imi.GetVideo(test_video_saliency);
 }
 
+void test_jpg_dir(const char *path) {
+    vcd::Dir dir;
+    dir.OpenDir(path);
+    std::string filename;
+    while (1) {
+        if (dir.GetNextFile(&filename) == false) {
+            break;
+        }
+
+        test_hc_method(filename.c_str(), NULL);
+    }
+}
+
 void test_single_pic(const char *path) {
     cv::Mat mat;
     test_hc_method(path, &mat);
@@ -98,7 +129,8 @@ void test_single_pic(const char *path) {
 }
 
 int main(int argc, char **argv) {
-    test_dir(argv[1]);
+    test_jpg_dir(argv[1]);
+    //test_dir(argv[1]);
 //    test_single_pic("../img/1.jpg");
 //    for (int i = 0; i < LIB_NUM; ++i) 
 //        test_dir(lib[i]);

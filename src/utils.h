@@ -57,6 +57,16 @@ inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst, int max_width 
     }
 }
 
+inline void resize_mat_by_height(const cv::Mat &src, cv::Mat &dst, int max_width = 480) {
+    const int kmaxcols = max_width;
+    if (src.rows <= kmaxcols) {
+        dst = src;
+    } else {
+        float factor = kmaxcols / (float)src.rows;
+        cv::resize(src, dst, cv::Size(), factor, factor);
+    }
+}
+
 inline void draw_rectangle(cv::Mat &mat, const cv::Rect &rect) {
     cv::rectangle(mat, rect, cv::Scalar(0, 0, 255));
 }
