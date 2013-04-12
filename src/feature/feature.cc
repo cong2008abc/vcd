@@ -11,17 +11,21 @@ namespace vcd {
 /*
  * implement get/set of key_id
  */
-int Feature::GetKeyId() {
+int Feature::GetKeyId() const {
     return _feature_id;
 }
 
 int Feature::SetKeyId(int key_id) {
     _feature_id = key_id;
     return 1;
-} /*
+}
+
+
+
+/*
  * implement ImproveOMFeature class
  */
-int ImpOMFeature::LEN = 16;
+int ImpOMFeature::LEN = 64;
 
 ImpOMFeature::ImpOMFeature() {
     _arr_color = NULL;
@@ -37,11 +41,12 @@ ImpOMFeature::~ImpOMFeature() {
  * remain it is test the discriminate of OM feature
  */
 bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h) {
-    int n = 4;
+    int n = 6;
     _arr_color = new uint8[n * n];
-   // _arr_entropy = new uint8[n * n];
+    _arr_entropy = new uint8[n * n];
 
     get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
+    //for (int i = 0; i < n * n; ++i) _arr_entropy[i] = 0;
     return true;
 }
 
@@ -50,39 +55,34 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     _arr_entropy = new uint8[n * n];
     
     // 1= cvt the yuv data to rgb
-    IplImage *img_rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
-    if (cvt_YUV2RGB(data, w, h, img_rgb) == false) {
+    //IplImage *img_rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+    cv::Mat img_rgb;
+    if (cvt_YUV2RGB(data, w, h, &img_rgb) == false) {
         return false;
     }
+
+    resize_mat_by_width(img_rgb, img_rgb, 160);
 
     cv::Mat img = img_rgb;
     cv::Rect margin;
     remove_margin(img, &margin);
-
-    // 2= extract the main rectangle on rgb image
+//
+//    // 2= extract the main rectangle on rgb image
     cv::Mat roi(img, margin);
+//    cv::Mat roi = img_rgb;
     cv::Rect rect;
     cv::Mat saliency_map;
     Saliency::Get(roi, saliency_map);    
     Saliency::ExtractView(saliency_map, rect);
 
-    // TODO(zhouchao) here exist a problem
-    // because the main rectangle is extract of the roi of 
-    // original image, so the coordinate of rect is the roi
-    // not the original image.
-    // so here exist a cvting...
-    
-//    show_mat(roi);
-//    cv::rectangle(saliency_map, rect, cv::Scalar(255));
+    // 3= convert to the whole coordiate
+    rect.x += margin.x;
+    rect.y += margin.y;
+
 //    show_mat(saliency_map);
-    //Saliency::Evaluate(saliency_map, saliency_map);
-//    show_mat(saliency_map);
-//    show_yuv(data, w, h);
 
     // 3= extract om feature on yuv data
-    get_real_feature(data, w, h, rect, n, _arr_color, _arr_entropy);
-
-    cvReleaseImage(&img_rgb);
+    get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
     return true;
 }
 
@@ -127,7 +127,6 @@ bool ImpOMFeature::ReadFromFile(FILE *pfile) {
 float ImpOMFeature::Compare(const Feature *rf) {
     //TODO(zhouchao) compare two feature distance
     //...
-
     const ImpOMFeature *real_rf = dynamic_cast<const ImpOMFeature*>(rf);
     return Compare(real_rf);
 }
@@ -135,6 +134,7 @@ float ImpOMFeature::Compare(const Feature *rf) {
 float ImpOMFeature::Compare(const ImpOMFeature *rf) {
     float ret_color = InterCompare(_arr_color, rf->_arr_color);
     float ret_entropy = InterCompare(_arr_entropy, rf->_arr_entropy);
+    //printf("entropy %f\n", ret_entropy);
     return ret_color > ret_entropy ? ret_entropy : ret_color;
 }
 
@@ -190,6 +190,23 @@ bool ImpOMFeature::CompressFeature(const uint8 *data, uint8 *result,int n) const
         rres = (rres << bit) | (data[i] & mask);
     }
     return true;
+}
+
+void ImpOMFeature::print() const {
+    if (_arr_color != NULL) {
+        printf("color array: ");
+        for (int i = 0; i < ImpOMFeature::LEN; ++i) {
+            printf("%d ", _arr_color[i]);
+        }
+        printf("\n");
+    }
+    if (_arr_entropy != NULL) {
+        printf("entropy array: ");
+        for (int i = 0; i < ImpOMFeature::LEN; ++i) {
+            printf("%d ", _arr_entropy[i]);
+        }
+        printf("\n");
+    }
 }
 
 /*

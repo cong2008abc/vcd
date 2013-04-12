@@ -27,6 +27,8 @@ public:
     bool OpenJpgDb(const char *path);
     bool GetNextImg(uint8 *data, int buff_size, int *w, int *h);
     bool GetVideo(process_func f);
+    bool GetNextYUV(process_func f);
+    bool GetNextYUV(const char *, process_func);
 
     static bool ProcessVideo(const char *path, process_func f);
     static bool ReadImg(const char *path, uint8* data, int buff_size,

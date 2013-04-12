@@ -114,4 +114,34 @@ bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h) {
     return true;
 }
 
+uint64 get_simply_feature(const cv::Mat &_src) {
+    int n = 8;
+    int sw = _src.cols / n;
+    int sh = _src.rows / n;
+
+    uint64 feat = 0;
+    cv::Mat src;
+    cv::cvtColor(_src, src, CV_BGR2GRAY); 
+    cv::Scalar whole_mean = cv::mean(src);
+    //printf("total:%f\n", whole_mean.val[0]);
+    for (int i = 0; i < n; i++) {
+        for (int j =0; j < n; j++) {
+            cv::Mat roi(src, cv::Rect(sw *j, sh *i, sw, sh));
+
+            cv::Scalar me = cv::mean(roi); 
+            //printf("%.2f ", me.val[0]);
+            uint64 seed = 1;
+            if (whole_mean.val[0] >= me.val[0] + 0.5) {
+                feat = feat | (seed << (i *n + j));
+            //    printf("1");
+            } else {
+            //    printf("0");
+            }
+        }
+        //printf("\n");
+    }
+    //show_mat(src);
+    return feat;
+}
+
 } // namespace vcd

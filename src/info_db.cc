@@ -50,12 +50,13 @@ bool InfoDB::OpenDB(const char *db_file) {
             break;
         }
 
-        char *content = new char[size];
+        char *content = new char[size + 1];
         ret = fread(content, sizeof(char), size, pf);
         if (ret != size) {
             fclose(pf);
             return false;
         }
+        content[size] = '\0';
 
         _ele_map.insert(std::pair<uint32, char *>(key_id, content));
     }
@@ -91,6 +92,14 @@ bool InfoDB::Dump(const char *db_path) {
     
     fclose(pf);
     return false;
+}
+
+const char* InfoDB::GetItem(uint32 key) {
+    if (_ele_map.find(key) != _ele_map.end()) {
+        return _ele_map[key];
+    } else {
+        return NULL;
+    }
 }
 
 void InfoDB::print() {

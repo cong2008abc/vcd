@@ -20,7 +20,8 @@ ROOT_DIR = .
 #
 
 # exec
-EXEC := run_test_om	run_test_sa
+EXEC := run_test_om	run_test_sa build_db \
+		generate_test_data sample_frame
 # unittest targets
 UNITTEST = unittest_imagebuf unittest_ominterface
 # all tests
@@ -90,7 +91,8 @@ LIBS := base/libbase.a feature/libfeature.a
 SRCS = feature_db.cc \
 	   frame.cc frame_index.cc om_interface.cc \
 	   thread_safe_index.cc vcd_file.cc \
-	   image_buf.cc
+	   image_buf.cc info_db.cc \
+	   simply_feature_index.cc
 	   #imitation.cc utils.cc
 
 # get objs from srcs
@@ -146,6 +148,22 @@ run_%: %.o $(EXEC_OBJS)
 	$(CC) -o $@ $^ $(EXEC_LDFLAS)
 	@echo
 
+build_db: build_db.o $(EXEC_OBJS)
+	@echo LINK Exec [$@]
+	$(CC) -o $@ $^ $(EXEC_LDFLAS) lib/libgtest.a
+	@echo
+
+generate_test_data: generate_test_data.o $(EXEC_OBJS)
+	@echo LINK Exec [$@]
+	$(CC) -o $@ $^ $(EXEC_LDFLAS) lib/libgtest.a
+	@echo
+
+sample_frame: sample_frame.o $(EXEC_OBJS)
+	@echo LINK Exec [$@]
+	$(CC) -o $@ $^ $(EXEC_LDFLAS) lib/libgtest.a
+	@echo
+
+
 # unittest linker
 LDFLAGS_TEST = lib/libgtest.a
 LDFLAGS_TEST += $(FFMPEG_LINK_FLAGS)
@@ -184,6 +202,15 @@ unittest_ominterface: $(UNITTEST_OMINTERFACE_OBJS)
 # special rules for unittest_*.cc
 # 
 unittest_%.o: unittest_%.cc
+	$(CC) $(CFLAGS) $(CFLAGS_TEST) -c $<
+
+build_db.o: build_db.cc
+	$(CC) $(CFLAGS) $(CFLAGS_TEST) -c $<
+
+generate_test_data.o: generate_test_data.cc
+	$(CC) $(CFLAGS) $(CFLAGS_TEST) -c $<
+
+sample_frame.o: sample_frame.cc
 	$(CC) $(CFLAGS) $(CFLAGS_TEST) -c $<
 
 #

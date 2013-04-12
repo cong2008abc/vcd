@@ -72,6 +72,8 @@ bool cvt_YUV2RGB(const uint8 *data, int w, int h, IplImage *rgb);
 
 bool cvt_RGB2YUV(const IplImage *src, uint8 *data, int nbuf, int *w, int *h);
 
+uint64 get_simply_feature(const cv::Mat&);
+
 inline void resize_mat_by_width(const cv::Mat &src, cv::Mat &dst, int max_width = 480) {
     const int kmaxcols = max_width;
     if (src.cols <= kmaxcols) {

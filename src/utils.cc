@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <highgui.h>
+#include <string>
+#include <list>
 
 /*
  * show IplImage!
@@ -13,6 +15,13 @@ void show_image(const IplImage *src, const char *name) {
     cvNamedWindow(name, CV_WINDOW_AUTOSIZE);
     cvShowImage(name, src);
     cvWaitKey(0);
+    //cvDestroyWindow(name);
+}
+
+void show_image(const IplImage *src, const char *name, int time) {
+    cvNamedWindow(name, CV_WINDOW_AUTOSIZE);
+    cvShowImage(name, src);
+    cvWaitKey(time);
     //cvDestroyWindow(name);
 }
 
@@ -259,13 +268,20 @@ void show_query_result(const char* query, BaseFeature** result, int nRes) {
     IplImage* query_gray = get_component_Y(query_img);
     show_query_result(query_gray, result, nRes);
 }
+*/
 
-void show_query_result(IplImage* query, BaseFeature** result, int nRes) {
+void show_query_result(const uint8 *data, int w, int h, const std::vector<std::string> &result) {
     const int printW = 180;
     const int printH = 160;
     const int numOfRow = 3;
 
+    int nRes = result.size();
     int row = (nRes + numOfRow - 1) / numOfRow;
+
+    IplImage *format_query = yuv2iplImage(data, w, h);
+    IplImage *query = cvCreateImage(cvSize(printW, printH),
+                                           format_query->depth, format_query->nChannels);
+    cvResize(format_query, query);
     
     int outputW = query->width + printW * numOfRow + 10 * numOfRow;
     int outputH = query->height > printH * row ? query->height : printH * row;
@@ -281,7 +297,7 @@ void show_query_result(IplImage* query, BaseFeature** result, int nRes) {
     IplImage *tmp = cvCreateImage(cvSize(printW, printH),
                                     IPL_DEPTH_8U, 1);
     for (int i = 0; i < nRes; i++) {
-        IplImage *src = cvLoadImage(result[i]->get_name());
+        IplImage *src = cvLoadImage(result[i].c_str());
         IplImage *gray = get_component_Y(src);
         IplImage *push = NULL;
         if (gray->width > printW || gray->height > printH) {
@@ -308,7 +324,7 @@ void show_query_result(IplImage* query, BaseFeature** result, int nRes) {
     show_image(printImg, "result");
     
 }
-
+/*
 void show_query_result(const uint8 *data, int w, int h,
         BaseFeature **result, int nRes) {
     if (nRes <= 0) {

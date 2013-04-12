@@ -3,6 +3,8 @@
 
 #include <cv.h>
 #include <highgui.h>
+#include <string>
+#include <vector>
 
 typedef unsigned char   uint8;
 
@@ -16,6 +18,7 @@ void show_yuv(const char *path);
 void show_yuv_colorful(const uint8 *data, int w, int h);
 void show_yuv(const uint8* data, int w, int h);
 void show_yuv_and_path(const uint8* data, int w, int h, const char *path);
+void show_query_result(const uint8 *data, int w, int h, const std::vector<std::string> &result);
 
 inline void show_mat(const cv::Mat &pic, int second = 0) {
     cv::namedWindow("mat", CV_WINDOW_AUTOSIZE);
@@ -68,7 +71,7 @@ inline void resize_mat_by_height(const cv::Mat &src, cv::Mat &dst, int max_width
 }
 
 inline void draw_rectangle(cv::Mat &mat, const cv::Rect &rect) {
-    cv::rectangle(mat, rect, cv::Scalar(0, 0, 255));
+    cv::rectangle(mat, rect, cv::Scalar(0, 0, 255), 2);
 }
     
 #endif

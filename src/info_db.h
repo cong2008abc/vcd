@@ -15,6 +15,7 @@ public:
     bool OpenDB(const char *db_path);
     uint32 Insert(const char *path);
     bool Dump(const char *db_path);
+    const char *GetItem(uint32 key);
 
     /*
      * test function

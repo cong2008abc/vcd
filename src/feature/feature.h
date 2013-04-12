@@ -27,8 +27,10 @@ public:
     virtual float Compare(const Feature *rf) = 0;
     //virtual uint32
     
-    int GetKeyId();
+    int GetKeyId() const;
     int SetKeyId(int key_id);
+
+    virtual void print() const = 0;
 
 protected:
     //
@@ -52,6 +54,7 @@ public:
     virtual float Compare(const ImpOMFeature *rf);
 
     bool GetCompressFeature(uint8 *data) const;
+    virtual void print() const;
 
 private:
     float InterCompare(const uint8 *arr_a, const uint8 *arr_b);
