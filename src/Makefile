@@ -21,7 +21,7 @@ ROOT_DIR = .
 
 # exec
 EXEC := run_test_om	run_test_sa build_db \
-		generate_test_data sample_frame
+		#generate_test_data sample_frame
 # unittest targets
 UNITTEST = unittest_imagebuf unittest_ominterface
 # all tests

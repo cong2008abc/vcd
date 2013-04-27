@@ -5,7 +5,7 @@
 #include "feature/feature.h"
 #include "base/vcd_dir.h"
 #include <string>
-//#include "imitation.h"
+#include "imitation.h"
 
 vcd::FeatureDB *db;
 vcd::InfoDB *info_db;
@@ -13,6 +13,33 @@ vcd::InfoDB *info_db;
 void init() {
     db = new vcd::FeatureDB();
     info_db = new vcd::InfoDB();
+}
+
+//
+// frame_process function will be callback by video decode process
+// frame_idx records the times
+static int frame_idx = 0;
+
+int frame_process(unsigned char *data, int w, int h)
+{
+    vcd::ImpOMFeature *impOM = new vcd::ImpOMFeature;
+    vcd::uint32 feature_idx = info_db->Insert(file.c_str());
+    impOM->ExtractFrame(buf, w, h);
+    impOM->SetKeyId(feature_idx);
+}
+
+void extract_video(const char *video_dir)
+{
+    vcd::Dir dir;
+    dir.OpenDir(video_dir);
+    std::string file;
+    while (1) {
+        if (dir.GetNextFile(&file) == false)
+            break;
+
+        frame_idx = 0;
+        Imitation::ProcessVideo(file.c_str(), frame_process);
+    }
 }
 
 void process_jpg_dir(const char *path) {
@@ -33,15 +60,37 @@ void process_jpg_dir(const char *path) {
 
         vcd::ImpOMFeature *impOM = new vcd::ImpOMFeature;
         vcd::uint32 feature_idx = info_db->Insert(file.c_str());
-        impOM->ExtractFrame(buf, w, h, 8);
+        impOM->ExtractFrame(buf, w, h);
         impOM->SetKeyId(feature_idx);
 
-        db->AddFeature(impOM);
-//        if (++i > 100)
+//        db->AddFeature(impOM);
+//        if (++i > 10)
 //        break;
     }
 
     delete [] buf;
+}
+
+TEST(speed, extract) {
+    init();
+    process_jpg_dir("/mnt/share/image_db");
+//    vcd::Dir dir;
+//    dir.OpenDir("/mnt/share/image_db");
+//    std::string subdir;
+//    while (1) {
+//        if (dir.GetNextFile(&subdir) == false)
+//            break;
+//        
+//        if (subdir.find('.') != std::string::npos)
+//            continue;
+//
+//        printf("%s\n", subdir.c_str());
+//        process_jpg_dir(subdir.c_str());
+//    }
+//
+//    db->Dump("../feature_om");
+//    info_db->Dump("../info/info.db");
+    //process_jpg_dir("/mnt/db/all");
 }
 
 void t() {
@@ -51,27 +100,6 @@ void t() {
     f_db.OpenDB("../feature_db");
     i_db.OpenDB("../info/info.db");
 //    i_db.print();
-}
-
-TEST(speed, extract) {
-    init();
-    vcd::Dir dir;
-    dir.OpenDir("/mnt/share/image_lib");
-    std::string subdir;
-    while (1) {
-        if (dir.GetNextFile(&subdir) == false)
-            break;
-        
-        if (subdir.find('.') != std::string::npos)
-            continue;
-
-        printf("%s\n", subdir.c_str());
-        process_jpg_dir(subdir.c_str());
-    }
-
-    db->Dump("../feature_db");
-    info_db->Dump("../info/info.db");
-    //process_jpg_dir("/mnt/db/all");
 }
 
 int main(int argc, char **argv) {

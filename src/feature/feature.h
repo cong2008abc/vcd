@@ -25,6 +25,7 @@ public:
     virtual bool ReadFromFile(FILE *pfile) = 0;
     
     virtual float Compare(const Feature *rf) = 0;
+    virtual float Compare(const Feature *rf, float thres);
     //virtual uint32
     
     int GetKeyId() const;
@@ -52,13 +53,16 @@ public:
 
     virtual float Compare(const Feature *rf);
     virtual float Compare(const ImpOMFeature *rf);
+    virtual float Compare(const Feature *rf, float thres);
 
     bool GetCompressFeature(uint8 *data) const;
     virtual void print() const;
 
-private:
+protected:
     float InterCompare(const uint8 *arr_a, const uint8 *arr_b);
-    bool ExtractIndex(const uint8 *data, int *idx_a, int *idx_b);
+
+private:
+    bool ExtractIndex(const uint8 *data, uint64 *idx_b);
     bool CompressFeature(const uint8 *data, uint8 *result, int n) const;
 
 private:
@@ -72,6 +76,22 @@ private:
     uint64 idx_b;
     uint64 idx_c;
     uint64 idx_d;
+};
+
+class SimplyOMFeature: public ImpOMFeature {
+public:
+    SimplyOMFeature();
+    ~SimplyOMFeature();
+
+    virtual bool ExtractFrame(const uint8 *data, int w, int h, int n);
+    virtual float Compare(SimplyOMFeature *rf, float thres);
+};
+
+class SaliencyOMFeature: public ImpOMFeature {
+public:
+    SaliencyOMFeature();
+    ~SaliencyOMFeature();
+    virtual bool ExtractFrame(const uint8 *data, int w, int h, int n);
 };
 
 Feature *FeatureFactory(int);

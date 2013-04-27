@@ -11,7 +11,7 @@
 namespace vcd {
 
 typedef unsigned int uint32;
-const float OM_THRESHOLD = 0.45;
+const float OM_THRESHOLD = 0.30;
 
 FeatureDB::FeatureDB() {
     _arr_feat = new Feature*[kMaxDBLen];
@@ -68,7 +68,7 @@ bool FeatureDB::OpenDB(const char *db_path) {
             }
             new_feat->SetKeyId(key_id);
             _arr_feat[_cur_len++] = new_feat;
-            //if (_cur_len == 1) _arr_feat[0]->print();
+            if (_cur_len == 1) _arr_feat[0]->print();
         }
         fclose(pf);
         free(namelist[i]);
@@ -96,24 +96,24 @@ bool FeatureDB::AddFeature(Feature *feat) {
 bool FeatureDB::Dump(const char *dir) {
     char tmp[128];
     printf("--exist %d features\n", _cur_len);
+    sprintf(tmp, "%s/%d.smp", dir, 1);
+    FILE *pf = fopen(tmp, "wb");
+    if (pf == NULL) { 
+        printf("failed when %s\n", tmp);
+        return false;
+    }
     for (int i = 0; i < _cur_len; ++i) {
         uint32 key_id = _arr_feat[i]->GetKeyId();
-        //printf("%d\n", key_id);
+//        //printf("%d\n", key_id);
         uint32 main_key = key_id;
-        //uint32 main_key= MAIN_KEY(key_id);
-        sprintf(tmp, "%s/%d.smp", dir, main_key);
-        FILE *pf = fopen(tmp, "wb");
-        if (pf == NULL) { 
-            printf("failed when %s\n", tmp);
-            continue;
-        }
+    //    uint32 main_key= MAIN_KEY(key_id);
 
         fwrite(&main_key, sizeof(uint32), 1, pf);
         _arr_feat[i]->DumpToFile(pf);
-        fclose(pf);
 
         if (i == 0) _arr_feat[i]->print();
     }
+    fclose(pf);
     return true;
 }
 
@@ -144,8 +144,10 @@ bool cmp(const result_tmp &a, const result_tmp &b) {
 std::list<const Feature*> FeatureDB::Query(const Feature *feat) {
     std::list<const Feature*> result;
     std::vector<result_tmp> tmp;
+    int k = 0;
     for (int i = 0; i < _cur_len; ++i) {
-        float sim = _arr_feat[i]->Compare(feat);
+        float sim = _arr_feat[i]->Compare(feat, OM_THRESHOLD);
+        if (sim == -1.0) k++;
         //printf("%f\n", sim);
         if (sim > OM_THRESHOLD) {
             //printf("get result: %d\n", _arr_feat[i]->GetKeyId());
@@ -153,8 +155,11 @@ std::list<const Feature*> FeatureDB::Query(const Feature *feat) {
             tmp.push_back(result_tmp(sim, _arr_feat[i]));
         }
     }
+
+    //printf("k %d\n", k);
+
     std::sort(tmp.begin(), tmp.end(), cmp);
-    for (int i = 0; i < 9 && i < tmp.size(); ++i) {
+    for (int i = 0; i < tmp.size(); ++i) {
         result.push_back(tmp[i].ptr);
     }
     return result;

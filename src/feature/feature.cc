@@ -20,6 +20,8 @@ int Feature::SetKeyId(int key_id) {
     return 1;
 }
 
+float Feature::Compare(const Feature *a, float f) {}
+
 
 
 /*
@@ -41,12 +43,16 @@ ImpOMFeature::~ImpOMFeature() {
  * remain it is test the discriminate of OM feature
  */
 bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h) {
-    int n = 6;
+    int n = 8;
     _arr_color = new uint8[n * n];
     _arr_entropy = new uint8[n * n];
 
     get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
-    //for (int i = 0; i < n * n; ++i) _arr_entropy[i] = 0;
+    for (int i = 0; i < n * n; ++i) _arr_entropy[i] = 0;
+
+    ExtractIndex(_arr_color, &idx_a);
+    ExtractIndex(_arr_entropy, &idx_b);
+
     return true;
 }
 
@@ -55,7 +61,6 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     _arr_entropy = new uint8[n * n];
     
     // 1= cvt the yuv data to rgb
-    //IplImage *img_rgb = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
     cv::Mat img_rgb;
     if (cvt_YUV2RGB(data, w, h, &img_rgb) == false) {
         return false;
@@ -66,10 +71,9 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     cv::Mat img = img_rgb;
     cv::Rect margin;
     remove_margin(img, &margin);
-//
-//    // 2= extract the main rectangle on rgb image
+
+    // 2= extract the main rectangle on rgb image
     cv::Mat roi(img, margin);
-//    cv::Mat roi = img_rgb;
     cv::Rect rect;
     cv::Mat saliency_map;
     Saliency::Get(roi, saliency_map);    
@@ -79,10 +83,14 @@ bool ImpOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
     rect.x += margin.x;
     rect.y += margin.y;
 
-//    show_mat(saliency_map);
-
-    // 3= extract om feature on yuv data
+    // 4= extract om feature on yuv data
     get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
+
+
+    // 5= get the index of feature
+    ExtractIndex(_arr_color, &idx_a);
+    ExtractIndex(_arr_entropy, &idx_b);
+
     return true;
 }
 
@@ -121,7 +129,39 @@ bool ImpOMFeature::ReadFromFile(FILE *pfile) {
 
     fread(_arr_color, sizeof(uint8), ImpOMFeature::LEN, pfile);
     fread(_arr_entropy, sizeof(uint8), ImpOMFeature::LEN, pfile);
+
+    ExtractIndex(_arr_color, &idx_a);
+    ExtractIndex(_arr_entropy, &idx_b);
+
     return true;
+}
+
+int get_diff(uint64 a, uint64 b) {
+    uint64 c = a ^ b;
+    int k = 0;
+    while (c != 0) {
+        c = c & (c - 1);
+        k++;
+    }
+
+    return k;
+}
+
+float ImpOMFeature::Compare(const Feature *rf, float thres) {
+    const ImpOMFeature *_rf = dynamic_cast<const ImpOMFeature*>(rf);
+
+    int diff_thre = 22;
+    if (get_diff(idx_a, _rf->idx_a) > diff_thre ||
+        get_diff(idx_b, _rf->idx_b) > diff_thre)
+        return -1.0;
+
+    float ret_col = InterCompare(_arr_color, _rf->_arr_color);
+    if (ret_col < thres)
+        return ret_col;
+
+    float ret_ent = InterCompare(_arr_entropy, _rf->_arr_entropy);
+
+    return ret_col > ret_ent ? ret_ent : ret_col;
 }
 
 float ImpOMFeature::Compare(const Feature *rf) {
@@ -173,9 +213,17 @@ float ImpOMFeature::InterCompare(const uint8 *arr_a, const uint8 *arr_b) {
     return k;
 }
 
-bool ImpOMFeature::ExtractIndex(const uint8 *data, int *idx_a, int *idx_b) {
-    //
-    return false;
+bool ImpOMFeature::ExtractIndex(const uint8 *data, uint64 *idx_a) {
+    uint64 seed = 0x1;
+    unsigned char thres = ImpOMFeature::LEN / 2;
+    uint64 &ret = *idx_a;
+    for (int i = 0; i < ImpOMFeature::LEN; ++i) {
+        if (data[i] < thres) {
+            ret = ret | (seed << i);    
+        }
+    }
+
+    return true;
 }
 
 /*
@@ -207,6 +255,106 @@ void ImpOMFeature::print() const {
         }
         printf("\n");
     }
+}
+
+/*
+ * SimplyOMFeature
+ *
+ */
+SimplyOMFeature::SimplyOMFeature() {
+}
+
+SimplyOMFeature::~SimplyOMFeature() {
+}
+
+bool SimplyOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
+    if (data == NULL|| n <= 0) {
+        return false;
+    }
+//    _arr_color = new uint8[n * n];
+//
+//    get_real_feature(data, w, h, n, _arr_color, NULL);
+//
+//    ExtractIndex(_arr_color, &idx_a);
+
+    return true;
+}
+
+float SimplyOMFeature::Compare(SimplyOMFeature *rf, float thres) {
+    const SimplyOMFeature* _rf = rf;
+
+//    int diff_thre = 22;
+//    if (get_diff(idx_a, _rf->idx_a) > diff_thre ||
+//        get_diff(idx_b, _rf->idx_b) > diff_thre)
+//        return -1.0;
+//
+//    float ret_col = InterCompare(_arr_color, _rf->_arr_color);
+//    if (ret_col < thres)
+//        return ret_col;
+//
+//    float ret_ent = InterCompare(_arr_entropy, _rf->_arr_entropy);
+//
+//    return ret_col > ret_ent ? ret_ent : ret_col;
+}
+
+/*
+ * saliency OM feature class
+ *
+ */
+
+SaliencyOMFeature::SaliencyOMFeature() {
+}
+
+SaliencyOMFeature::~SaliencyOMFeature() {
+}
+
+bool SaliencyOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
+    if (data == NULL) {
+        return false;
+    }
+
+//    if (_arr_color != null) {
+//        delete [] _arr_color;
+//    }
+//    if (_arr_entropy != null) {
+//        delete [] _arr_entropy;
+//    }
+//
+//    _arr_color = new uint8[n * n];
+//    _arr_entropy = new uint8[n * n];
+//
+//    // 1= cvt the yuv data to rgb
+//    cv::Mat img_rgb;
+//    if (cvt_YUV2RGB(data, w, h, &img_rgb) == false) {
+//        return false;
+//    }
+//
+//    resize_mat_by_width(img_rgb, img_rgb, 160);
+//
+//    cv::Mat img = img_rgb;
+//    cv::Rect margin;
+//    remove_margin(img, &margin);
+//
+//    // 2= extract the main rectangle on rgb image
+//    cv::Mat roi(img, margin);
+//    cv::Rect rect;
+//    cv::Mat saliency_map;
+//    Saliency::Get(roi, saliency_map);    
+//    Saliency::ExtractView(saliency_map, rect);
+//
+//    // 3= convert to the whole coordiate
+//    rect.x += margin.x;
+//    rect.y += margin.y;
+//
+//    // 4= extract om feature on yuv data
+//    get_real_feature(data, w, h, n, _arr_color, _arr_entropy);
+//
+//
+//    // 5= get the index of feature
+//    ExtractIndex(_arr_color, &idx_a);
+//    ExtractIndex(_arr_entropy, &idx_b);
+
+    return true;
 }
 
 /*

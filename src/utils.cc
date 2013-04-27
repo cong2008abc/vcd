@@ -275,7 +275,7 @@ void show_query_result(const uint8 *data, int w, int h, const std::vector<std::s
     const int printH = 160;
     const int numOfRow = 3;
 
-    int nRes = result.size();
+    int nRes = result.size() < 9 ? result.size() : 9;
     int row = (nRes + numOfRow - 1) / numOfRow;
 
     IplImage *format_query = yuv2iplImage(data, w, h);

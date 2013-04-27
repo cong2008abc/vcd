@@ -96,7 +96,7 @@ int close_db() {
 int query_image(unsigned char *data, int w, int h) {
     vcd::ImpOMFeature imp;
 
-    imp.ExtractFrame(data, w, h, 8);
+    imp.ExtractFrame(data, w, h);
     std::list<const vcd::Feature*> r;
     r = db->Query(&imp);
 
@@ -107,11 +107,11 @@ int query_image(unsigned char *data, int w, int h) {
         const vcd::Feature *ptr = *it;
         std::string path(info_db->GetItem(ptr->GetKeyId()));
         result.push_back(path.substr(0, path.find(".jpg") + 4));
-        printf("%d %s\n",(*it)->GetKeyId(),
+        printf("%d %s %.4f\n",(*it)->GetKeyId(),
                             info_db->GetItem((*it)->GetKeyId()),
                             imp.Compare(ptr));
     }
-    show_query_result(data, w, h, result);
+//    show_query_result(data, w, h, result);
 
     return 0;
 }

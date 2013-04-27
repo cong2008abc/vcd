@@ -108,14 +108,14 @@ int read_video(const char *path, process_func process) {
         fprintf(stderr, "Cannot initialize the conversion context!\n");
         return -1;
     }
-    int i = 7;
+//    int i = 7;
     while (get_next_frame(pformat_ctx, pcodec_ctx, video_stream, pframe)) {
         int offset = 0;
         int width = pcodec_ctx->width;
         int height = pcodec_ctx->height;
-        if ((i++) % 17 != 0) {
-            continue;
-        }
+//        if ((i++) % 17 != 0) {
+//            continue;
+//        }
 //        printf("%d\n", i++);
 
         for (int c = 0; c < 3; ++c) {

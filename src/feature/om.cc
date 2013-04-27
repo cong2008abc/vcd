@@ -1,5 +1,6 @@
 #include "om.h"
 #include "base/logging.h"
+#include "common.h"
 #include <stdio.h>
 #include <algorithm>
 #include <cassert>
@@ -396,7 +397,7 @@ int check_image_entropy(const uint8 *data, int w, int h) {
 void get_real_feature(const uint8 *data, int w, int h, int N2,
         uint8 *orderAvg, uint8 *orderEnt) {
     int sw = 0, sh = 0, pw = w, ph = h;
-    get_edge2(data, w, h, sw, sh, pw, ph);
+    //get_edge2(data, w, h, sw, sh, pw, ph);
     cv::Rect rect(sw, sh, pw, ph);
     get_real_feature(data, w, h, cv::Rect(sw, sh, pw, ph), N2,
                      orderAvg, orderEnt);
@@ -447,6 +448,7 @@ void get_real_feature(const uint8 *data, int w, int h,
                     &posAvg[idx].val);
                 posAvg[idx].idx = i * N2 + j;
             }
+
             if (orderEnt != NULL) {
                 get_rect_entropy(data, w, h, leftX, leftY, subw, subh,
                     &posEnt[idx].val);

@@ -20,6 +20,9 @@ public:
     virtual float Compare(const Feature *rf);
 
     static int FEATURE_LEN;
+    
+    void print() const
+    {}
 
 private:
     float ABS(float x);
