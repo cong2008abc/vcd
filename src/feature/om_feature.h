@@ -1,3 +1,16 @@
+/*
+ * author: zhouchao(zhouchao@ict.ac.cn
+ *
+ * this file describe three different features based on OM(ordinal Measure) 
+ *
+ * [1] class OM is the based class of all features, define some common functions
+ *
+ * [2] class SimplyOM is the simply use of OM feature, just the sorted array of color
+ *
+ * [3] class ImprovedOM is the improved use of OM feature, add the 
+ * sorted array of entropy
+ *
+ */
 #include "define.h"
 
 namespace vcd {
@@ -16,8 +29,8 @@ public:
 protected:
     bool DumpToFile(FILE *pf);
     float OMCompare(uint8 *a, uint8 *b, int len);
-    int BinaryCompare(uint64 a, uint64 b);
-    uint64 ExtractBinaryIndex(uint8 *a, int len);
+    int HammCompare(uint64 a, uint64 b);
+    bool ExtractBinaryIndex(uint8 *a, uint64 *ret, int len);
     int Compress(const uint8 *f, int len, uint8 *ret);
 
 private:
