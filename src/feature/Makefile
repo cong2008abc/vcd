@@ -53,6 +53,6 @@ unittest_om: unittest_om.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB) $(LDFLAGS_TEST)
 
 clean:
-	$(RM) $(OBJS) $(LIB) *.o *.d
+	$(RM) $(OBJS) $(LIB) *.o *.d *.a
 
 .PHONY: all clean

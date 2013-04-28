@@ -26,7 +26,6 @@ public:
     
     virtual float Compare(const Feature *rf) = 0;
     virtual float Compare(const Feature *rf, float thres);
-    //virtual uint32
     
     int GetKeyId() const;
     int SetKeyId(int key_id);
