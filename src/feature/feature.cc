@@ -281,7 +281,8 @@ bool SimplyOMFeature::ExtractFrame(const uint8 *data, int w, int h, int n) {
 }
 
 float SimplyOMFeature::Compare(SimplyOMFeature *rf, float thres) {
-    const SimplyOMFeature* _rf = rf;
+//    const SimplyOMFeature* _rf = rf;
+    return -10.0;
 
 //    int diff_thre = 22;
 //    if (get_diff(idx_a, _rf->idx_a) > diff_thre ||
