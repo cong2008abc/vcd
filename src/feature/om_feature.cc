@@ -71,8 +71,7 @@ float OM::OMCompare(const uint8 *a, const uint8 *b, const int len_) const {
 
 int OM::HammCompare(const uint64 a, const uint64 b) const {
     //
-    // get the num of 1 in a^b
-    //
+    // get the num of 1 in a^b //
     uint64 c = a ^ b;
     int k = 0;
     while (c != 0) {
@@ -140,6 +139,10 @@ float SimplyOM::SpeedCompare(const OM *rf_, int diff) const {
     return OMCompare(_arr_color, rf->_arr_color, _n);
 }
 
+int SimplyOM::GetHashKey(int n) const {
+    return 0;
+}
+
 bool SimplyOM::DumpToFile(FILE *pf) {
     OM::DumpToFile(pf);
     fwrite(&_n, sizeof(int), 1, pf);
@@ -167,6 +170,11 @@ SimplyOM* SimplyOM::ReadFromFile(FILE *pf) {
     feat->SetID(key);
     fread(feat->_arr_color, sizeof(uint8), n, pf);
 
+    return feat;
+}
+
+SimplyOM* SimplyOM::SampleFeature() {
+    SimplyOM *feat = new SimplyOM(4);
     return feat;
 }
 
@@ -208,6 +216,10 @@ float ImprovedOM::SpeedCompare(const OM *rf_, int diff) const {
     float ret_col = OMCompare(this->_arr_color, rf->_arr_color, _n);
     float ret_ent = OMCompare(this->_arr_entropy, rf->_arr_entropy, _n);
     return ret_col > ret_ent ? ret_ent : ret_col;
+}
+
+int ImprovedOM::GetHashKey(int n) const {
+    return 0;
 }
 
 bool ImprovedOM::DumpToFile(FILE *pf) {

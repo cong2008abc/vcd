@@ -7,9 +7,11 @@ LIB = libfeature.a
 RM = rm -rf
 SRCS = color_hist.cc feature.cc img_saliency.cc om.cc \
 	   segment_image.cc common.cc om_feature.cc \
-	   common_index.cc
+	   om_index.cc
 HEADS = *.h
 OBJS = $(subst .cc,.o, $(SRCS))
+
+UNITTEST = unittest_om unittest_om_index
 
 CC = g++
 ROOT_DIR=..
@@ -51,6 +53,9 @@ LDFLAGS_TEST = -L$(ROOT_DIR)/lib -lgtest -L$(ROOT_DIR)/base -lbase \
 			   `pkg-config --libs opencv`
 
 unittest_om: unittest_om.o $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB) $(LDFLAGS_TEST)
+
+unittest_om_index: unittest_om_index.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIB) $(LDFLAGS_TEST)
 
 clean:

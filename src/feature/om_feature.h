@@ -13,6 +13,8 @@
  *
  */
 
+#ifndef _OM_FEATURE_H_
+#define _OM_FEATURE_H_
 #include "define.h"
 
 namespace vcd {
@@ -24,6 +26,7 @@ public:
 
     virtual float Compare(const OM *rf) const = 0;
     virtual float SpeedCompare(const OM *rf, int diff) const = 0;
+    virtual int GetHashKey(int n) const = 0;
     bool SetID(uint64 id);
     uint64 GetID();
     
@@ -79,10 +82,16 @@ public:
 
     float Compare(const OM *rf) const;
     float SpeedCompare(const OM *rf, int diff) const;
+    int GetHashKey(int n) const;
     bool DumpToFile(FILE *pf);
 
     static SimplyOM* Extract(const uint8 *data, int w, int h, int n);
     static SimplyOM* ReadFromFile(FILE *pf); 
+
+    //
+    // Just Reture a Sample Feature for test
+    //
+    static SimplyOM* SampleFeature();
 
 private:
     //
@@ -113,6 +122,7 @@ public:
     float Compare(const OM *rf) const;
     float SpeedCompare(const OM *rf, int diff) const;
     float SpeedCompare(const OM *rf, int diff, float thres) const;
+    int GetHashKey(int n) const;
     bool DumpToFile(FILE *pf);
 
     static ImprovedOM* Extract(const uint8 *data, int w, int h, int n);
@@ -139,4 +149,7 @@ private:
     int _n;
 };
 
+
 } // namespace vcd
+
+#endif
