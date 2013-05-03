@@ -3,6 +3,8 @@
 #include "common.h"
 #include "img_saliency.h"
 #include <cv.h>
+#include <stdlib.h>
+#include <time.h>
 
 namespace vcd {
 
@@ -26,6 +28,11 @@ uint64 OM::GetID() {
 
 bool OM::DumpToFile(FILE *pf) {
     fwrite(&_key_id, sizeof(uint64), 1, pf);
+    return true;
+}
+
+bool OM::Print() {
+    printf("%llu:", _key_id);
     return true;
 }
 
@@ -107,6 +114,47 @@ int OM::Compress(const uint8 *f, int len, uint8 *ret) {
     return 0;
 }
 
+struct sort_t {
+    int pre;
+    int idx;
+};
+
+bool sort_t_cmp(const sort_t &a, const sort_t &b) {
+    return a.pre < b.pre;
+}
+
+uint64 OM::HashArray(const uint8 *a, int len, int n) const {
+    const int interval = 5; 
+    sort_t *temp = new sort_t[n];
+    for (int i = 0, pos = 0; i < n; i++) {
+        temp[i].pre = a[pos];
+        temp[i].idx = i;
+
+        pos += interval;
+        pos %= len;
+    }
+
+    std::sort(temp, temp + n, sort_t_cmp);
+    int k = 1;
+    int t = 0;
+    while (k < n) {
+        k = k << 1;
+        t++;
+    }
+
+    uint64 ret = 0;
+    for (int i = 0; i < n; i++) {
+    //    printf("%d\n", temp[i].idx);
+        ret = ret | (temp[i].idx);
+        ret <<= t;
+    }
+    //printf("?? %llu\n", ret);
+
+    delete [] temp;
+
+    return ret;
+}
+
 
 
 //
@@ -139,8 +187,9 @@ float SimplyOM::SpeedCompare(const OM *rf_, int diff) const {
     return OMCompare(_arr_color, rf->_arr_color, _n);
 }
 
-int SimplyOM::GetHashKey(int n) const {
-    return 0;
+uint64 SimplyOM::GetHashKey(int n) const {
+    return HashArray(_arr_color, _n, n);
+    //return 0;
 }
 
 bool SimplyOM::DumpToFile(FILE *pf) {
@@ -152,8 +201,17 @@ bool SimplyOM::DumpToFile(FILE *pf) {
     return true;
 }
 
+bool SimplyOM::Print() {
+    printf("\t");
+    for (int i = 0; i < _n; i++) {
+        printf("%d|", _arr_color[i]);
+    }
+    printf("\n");
+    return true;
+}
+
 SimplyOM* SimplyOM::Extract(const uint8 *data, int w, int h, int n) {
-    SimplyOM *feature = new SimplyOM(n);
+    SimplyOM *feature = new SimplyOM(n * n);
     get_real_feature(data, w, h, n, feature->_arr_color, NULL);
 
     return feature;
@@ -173,8 +231,25 @@ SimplyOM* SimplyOM::ReadFromFile(FILE *pf) {
     return feat;
 }
 
-SimplyOM* SimplyOM::SampleFeature() {
-    SimplyOM *feat = new SimplyOM(4);
+SimplyOM* SimplyOM::SampleFeature(int n) {
+    SimplyOM *feat = new SimplyOM(n);
+
+    for (int i = 0; i < n; i++) {
+        feat->_arr_color[i] = i;
+    }
+
+    //
+    // get a rand feat
+    //
+//    srand((unsigned)time(NULL));
+    for (int i = 0; i < n; i++) {
+        int k = rand() % (n - i);
+
+        int tmp = feat->_arr_color[k];
+        feat->_arr_color[k] = feat->_arr_color[n - 1 - i];
+        feat->_arr_color[n - 1 - i] = tmp;
+    }
+
     return feat;
 }
 
@@ -218,8 +293,8 @@ float ImprovedOM::SpeedCompare(const OM *rf_, int diff) const {
     return ret_col > ret_ent ? ret_ent : ret_col;
 }
 
-int ImprovedOM::GetHashKey(int n) const {
-    return 0;
+uint64 ImprovedOM::GetHashKey(int n) const {
+    return HashArray(_arr_color, _n, n);
 }
 
 bool ImprovedOM::DumpToFile(FILE *pf) {
@@ -231,8 +306,21 @@ bool ImprovedOM::DumpToFile(FILE *pf) {
     return true;
 }
 
+bool ImprovedOM::Print() {
+    printf("\t");
+    for (int i = 0; i < _n; i++) {
+        printf("%d|", _arr_color[i]);
+    }
+    printf("\n\t");
+    for (int i = 0; i < _n; i++) {
+        printf("%d|", _arr_entropy[i]);
+    }
+    printf("\n");
+    return true;
+}
+
 ImprovedOM* ImprovedOM::Extract(const uint8 *data, int w, int h, int n) { 
-    ImprovedOM *feat = new ImprovedOM(n);
+    ImprovedOM *feat = new ImprovedOM(n * n);
     get_real_feature(data, w, h, n, feat->_arr_color, feat->_arr_entropy);
 
     return feat;
@@ -273,7 +361,7 @@ ImprovedOM* ImprovedOM::ExtractWithSaliency(const uint8 *data, int w,
     rect.y += margin.y;
 
     // 4= extract om feature on yuv data
-    ImprovedOM *feat = new ImprovedOM(n);
+    ImprovedOM *feat = new ImprovedOM(n * n);
     get_real_feature(data, w, h, rect, n, feat->_arr_color, feat->_arr_entropy);
 
 

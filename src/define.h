@@ -10,9 +10,9 @@ typedef unsigned int    uint32;
 typedef unsigned long long  uint64;
 typedef int             int32;
 
-#define ASSGIN(key, frame_id) ((key << 12) | (frame_id))
-#define MAIN_KEY(key) (key >> 12)
-#define FRAME_ID(key) (key & 0xFFF)
+#define ASSGIN(key, frame_id) ((key << 16) | (frame_id))
+#define MAIN_KEY(key) (key >> 16)
+#define FRAME_ID(key) (key & 0xFFFF)
 
 #define DISALLOW_COPY_AND_ASSIAGN(TypeName) \
 private:                                    \

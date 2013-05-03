@@ -22,23 +22,24 @@ namespace vcd {
 class OM {
 public:
     OM();
-    ~OM();
+    virtual ~OM();
 
     virtual float Compare(const OM *rf) const = 0;
     virtual float SpeedCompare(const OM *rf, int diff) const = 0;
-    virtual int GetHashKey(int n) const = 0;
+    virtual uint64 GetHashKey(int n) const = 0;
+    virtual bool Print();
     bool SetID(uint64 id);
     uint64 GetID();
-    
-protected:
-    /*
-     * common functions for all OM features.
-     */
 
     //
     // output all common data of feature to file
     //
     bool DumpToFile(FILE *pf);
+    
+protected:
+    /*
+     * common functions for all OM features.
+     */
 
     // 
     // compare two om sorted array with different len
@@ -71,6 +72,11 @@ protected:
     //
     int Compress(const uint8 *f, int len, uint8 *ret);
 
+    //
+    // extract hashkey for the sorted array
+    //
+    uint64 HashArray(const uint8 *a, int len, int n) const;
+
 private:
     uint64 _key_id;
 };
@@ -82,8 +88,9 @@ public:
 
     float Compare(const OM *rf) const;
     float SpeedCompare(const OM *rf, int diff) const;
-    int GetHashKey(int n) const;
+    uint64 GetHashKey(int n) const;
     bool DumpToFile(FILE *pf);
+    bool Print();
 
     static SimplyOM* Extract(const uint8 *data, int w, int h, int n);
     static SimplyOM* ReadFromFile(FILE *pf); 
@@ -91,7 +98,7 @@ public:
     //
     // Just Reture a Sample Feature for test
     //
-    static SimplyOM* SampleFeature();
+    static SimplyOM* SampleFeature(int n);
 
 private:
     //
@@ -122,8 +129,9 @@ public:
     float Compare(const OM *rf) const;
     float SpeedCompare(const OM *rf, int diff) const;
     float SpeedCompare(const OM *rf, int diff, float thres) const;
-    int GetHashKey(int n) const;
+    uint64 GetHashKey(int n) const;
     bool DumpToFile(FILE *pf);
+    bool Print();
 
     static ImprovedOM* Extract(const uint8 *data, int w, int h, int n);
     static ImprovedOM* ExtractWithSaliency(const uint8 *data, int w, int h, int n);
