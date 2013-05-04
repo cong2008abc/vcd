@@ -53,9 +53,9 @@ void test_yuv(const char *path) {
 
 int main(int argc, char **argv) {
     open_db(db_path); 
-    kMaxSize = 1024 * 1024 * 3;
-    img_data = new unsigned char[kMaxSize];
-    test_dir(argv[1]);
+//    kMaxSize = 1024 * 1024 * 3;
+//    img_data = new unsigned char[kMaxSize];
+//    test_dir(argv[1]);
 //
 //    for (int i = 0; i < LIB_NUM; ++i) {
 //        test_dir(lib[i]);

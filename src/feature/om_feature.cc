@@ -22,7 +22,7 @@ bool OM::SetID(uint64 id) {
     return true;
 }
 
-uint64 OM::GetID() {
+uint64 OM::GetID() const {
     return _key_id;
 }
 
@@ -202,6 +202,7 @@ bool SimplyOM::DumpToFile(FILE *pf) {
 }
 
 bool SimplyOM::Print() {
+    OM::Print();
     printf("\t");
     for (int i = 0; i < _n; i++) {
         printf("%d|", _arr_color[i]);
@@ -221,12 +222,18 @@ SimplyOM* SimplyOM::ReadFromFile(FILE *pf) {
     // un-beautiful codes
     uint64 key;
     int n;
-    fread(&key, sizeof(uint64), 1, pf);
+    int ret = fread(&key, sizeof(uint64), 1, pf);
+    if (ret != 1) {
+        return NULL;
+    }
     fread(&n, sizeof(int), 1, pf);
+
+    fprintf(stderr, "%llu %d\n", key, n);
 
     SimplyOM *feat = new SimplyOM(n);
     feat->SetID(key);
     fread(feat->_arr_color, sizeof(uint8), n, pf);
+    fread(&feat->_binary_idx, sizeof(uint64), 1, pf);
 
     return feat;
 }
@@ -307,6 +314,7 @@ bool ImprovedOM::DumpToFile(FILE *pf) {
 }
 
 bool ImprovedOM::Print() {
+    OM::Print();
     printf("\t");
     for (int i = 0; i < _n; i++) {
         printf("%d|", _arr_color[i]);
@@ -376,8 +384,14 @@ ImprovedOM* ImprovedOM::ReadFromFile(FILE *pf) {
     // un-beautiful codes
     uint64 key;
     int n;
-    fread(&key, sizeof(uint64), 1, pf);
-    fread(&n, sizeof(int), 1, pf);
+    int ret = fread(&key, sizeof(uint64), 1, pf);
+    if (ret != 1) {
+        return NULL;
+    }
+    ret = fread(&n, sizeof(int), 1, pf);
+    if (ret != 1) {
+        return NULL;
+    }
 
     ImprovedOM *feat = new ImprovedOM(n);
     feat->SetID(key);
@@ -387,4 +401,13 @@ ImprovedOM* ImprovedOM::ReadFromFile(FILE *pf) {
     return feat;
 }
 
+OM* ReadFeatureFromFile(FILE *pf, int type) {
+    if (type & FEAT_OM) {
+        return SimplyOM::ReadFromFile(pf);
+    } else if ((type & FEAT_IMP_OM) || (type & FEAT_SA_OM)) {
+        return ImprovedOM::ReadFromFile(pf);
+    }
+
+    return NULL;
+}
 } // namespace vcd

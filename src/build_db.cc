@@ -153,14 +153,14 @@ TEST(extract, video) {
     //process_jpg_dir("/mnt/db/all");
 //}
 
-void t() {
-    vcd::FeatureDB f_db;
-    vcd::InfoDB i_db;
-
-    f_db.OpenDB("../feature_db");
-    i_db.OpenDB("../info/info.db");
-//    i_db.print();
-}
+//void t() {
+//    vcd::FeatureDB f_db;
+//    vcd::InfoDB i_db;
+//
+//    f_db.OpenDB("../feature_db");
+//    i_db.OpenDB("../info/info.db");
+////    i_db.print();
+//}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

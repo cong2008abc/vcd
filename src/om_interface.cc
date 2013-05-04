@@ -2,7 +2,8 @@
 #include "feature_db.h"
 #include "info_db.h"
 #include "utils.h"
-#include "feature/feature.h"
+#include "global.h"
+#include "feature/om_feature.h"
 #include <list>
 #include <vector>
 #include <string>
@@ -15,38 +16,29 @@ vcd::FeatureDB *db;
 vcd::InfoDB *info_db;
 
 int open_db(char *path) {
-//    db = new vcd::FeatureDB();
-//    info_db = new vcd::InfoDB();
-//
-//    db->OpenDB(path);
-//    info_db->OpenDB("../info/info.db");
+    db = new vcd::FeatureDB();
+    db->OpenDB(Global::db_path, Global::query_method);
 
     return 0;
 }
 
 int close_db() {
+    delete db;
     return 0;
 }
 
 int query_image(unsigned char *data, int w, int h) {
-    vcd::ImpOMFeature imp;
 
-    imp.ExtractFrame(data, w, h);
-    std::list<const vcd::Feature*> r;
-    r = db->Query(&imp);
+    switch (Global::query_method) {
+        case FEAT_OM:
+            vcd::OM *feat = vcd::SimplyOM::Extract(data, w, h, Global::sub_num);
+            const vcd::OM *feat_ret;
+            float ret = db->Query(feat, &feat_ret);
 
-    //show_yuv_colorful(data, w, h);
-    std::vector<std::string> result; 
-    for(std::list<const vcd::Feature*>::iterator it = r.begin();
-        it != r.end(); ++it) {
-        const vcd::Feature *ptr = *it;
-        std::string path(info_db->GetItem(ptr->GetKeyId()));
-        result.push_back(path.substr(0, path.find(".jpg") + 4));
-        printf("%d %s %.4f\n",(*it)->GetKeyId(),
-                            info_db->GetItem((*it)->GetKeyId()),
-                            imp.Compare(ptr));
+            vcd::uint64 id = feat_ret->GetID();
+            printf("%f %llu %llu\n", ret, MAIN_KEY(id), FRAME_ID(id));
+            break;
     }
-//    show_query_result(data, w, h, result);
 
     return 0;
 }

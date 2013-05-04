@@ -23,4 +23,10 @@ private:                                    \
 
 #define _VCD_DEBUG
 
+enum METHOD {
+    FEAT_OM = 0x1,
+    FEAT_IMP_OM = 0x2,
+    FEAT_SA_OM = 0x4,
+};
+
 #endif

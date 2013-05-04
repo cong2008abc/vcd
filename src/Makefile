@@ -92,7 +92,7 @@ SRCS = feature_db.cc \
 	   frame.cc frame_index.cc om_interface.cc \
 	   thread_safe_index.cc vcd_file.cc \
 	   image_buf.cc info_db.cc \
-	   simply_feature_index.cc
+	   simply_feature_index.cc global.cc
 	   #imitation.cc utils.cc
 
 # get objs from srcs

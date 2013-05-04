@@ -11,7 +11,7 @@ SRCS = color_hist.cc feature.cc img_saliency.cc om.cc \
 HEADS = *.h
 OBJS = $(subst .cc,.o, $(SRCS))
 
-UNITTEST = unittest_om unittest_om_index
+#UNITTEST = unittest_om unittest_om_index
 
 CC = g++
 ROOT_DIR=..

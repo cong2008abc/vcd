@@ -1,12 +1,14 @@
 #include "define.h"
 #include "feature_db.h"
 #include "feature/feature.h"
+#include "base/vcd_dir.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <algorithm>
 #include <vector>
+#include <string>
 
 namespace vcd {
 
@@ -14,155 +16,46 @@ typedef unsigned int uint32;
 const float OM_THRESHOLD = 0.30;
 
 FeatureDB::FeatureDB() {
-    _arr_feat = new Feature*[kMaxDBLen];
-    _capacity = kMaxDBLen;
-    _cur_len = 0;
-
-    //item = new DB_Item[kMaxDBLen];
+    _feat_index = new OMIndex(7);
 }
 
 FeatureDB::~FeatureDB() {
-    for (int i = 0; i < _cur_len; ++i) {
-        if (_arr_feat[i] != NULL) {
-            delete _arr_feat[i];
-        }
-    }
-    delete [] _arr_feat;
+    delete _feat_index;
 }
 
-bool FeatureDB::OpenDB(const char *db_path) {
-    struct dirent **namelist;
-    int num = scandir(db_path, &namelist, NULL, alphasort);
-    if (num <= 0) {
-        return false;
-    }
-    
-    //FILE *merge_pf = fopen("../feature_db2/1.smp", "wb");
-    //char buf[1024 * 10];
-    for (int i = 0; i < num; ++i) {
-        char name[64];
-        sprintf(name, "%s/%s", db_path, namelist[i]->d_name);
-        if (i % 100 == 0)
-            printf("%d\n", i);
-        FILE *pf = fopen(name, "rb");
-        if (pf == NULL) {
-            continue;
+bool FeatureDB::OpenDB(const char *db_path, int om_type) {
+    Dir feat_dir;    
+    feat_dir.OpenDir(db_path);
+    std::string feature_path;
+        int k = 0;
+    while (true) {
+        if (feat_dir.GetNextFile(&feature_path) == false) {
+            break;
         }
 
-        //int len = fread(buf, sizeof(char), 1024, pf);
-        //fwrite(buf, sizeof(char), len, merge_pf);
-
-        /*
-         * one feature file may store many features
-         */
-        while (1) {
-            uint32 key_id;
-            int ret;
-            ret = fread(&key_id, sizeof(uint32), 1, pf);
-            if (ret <= 0) break;
-
-            Feature *new_feat = FeatureFactory(kImprovedOM);
-            if (new_feat->ReadFromFile(pf) == false) {
-                delete new_feat;
+        FILE *pf = fopen(feature_path.c_str(), "rb");
+        if (pf == NULL) continue;
+        while (true) {
+            OM *feat = ReadFeatureFromFile(pf, om_type);
+            if (feat == NULL) {
                 break;
             }
-            new_feat->SetKeyId(key_id);
-            _arr_feat[_cur_len++] = new_feat;
-            if (_cur_len == 1) _arr_feat[0]->print();
-        }
-        fclose(pf);
-        free(namelist[i]);
+
+            _feat_index->Insert(feat); 
+            k++;
+            //feat->Print();
+        }                
     }
 
-    //fclose(merge_pf);
+    printf("%d\n", k);
+    _feat_index->PrintCurrentInfo();
 
-    printf("%d\n", _cur_len);
-    
     return true;
 }
 
-bool FeatureDB::AddFeature(Feature *feat) {
-    if (_cur_len >= _capacity) {
-        return false;
-    }
-
-    _arr_feat[_cur_len++] = feat;
-    return true;
+float FeatureDB::Query(const OM *feat, const OM **ret) {
+    return _feat_index->Query(feat, ret);
 }
 
-/*
- * sort the feature with the same main_key into one feature file
- */
-bool FeatureDB::Dump(const char *dir) {
-    char tmp[128];
-    printf("--exist %d features\n", _cur_len);
-    sprintf(tmp, "%s/%d.smp", dir, 1);
-    FILE *pf = fopen(tmp, "wb");
-    if (pf == NULL) { 
-        printf("failed when %s\n", tmp);
-        return false;
-    }
-    for (int i = 0; i < _cur_len; ++i) {
-        uint32 key_id = _arr_feat[i]->GetKeyId();
-//        //printf("%d\n", key_id);
-        uint32 main_key = key_id;
-    //    uint32 main_key= MAIN_KEY(key_id);
-
-        fwrite(&main_key, sizeof(uint32), 1, pf);
-        _arr_feat[i]->DumpToFile(pf);
-
-        if (i == 0) _arr_feat[i]->print();
-    }
-    fclose(pf);
-    return true;
-}
-
-bool FeatureDB::ExistSimilarFeature(const Feature *feat) {
-    for (int i = 0; i < _cur_len; ++i) {
-        float sim = _arr_feat[i]->Compare(feat);
-        if (sim > OM_THRESHOLD) {
-            return true;
-        }
-    }
-    return false;
-}
-
-struct result_tmp {
-    float sim;
-    const Feature *ptr;
-
-    result_tmp(float s, const Feature *p) {
-        sim = s;
-        ptr = p;
-    }
-};
-
-bool cmp(const result_tmp &a, const result_tmp &b) {
-    return a.sim > b.sim;
-}
-
-std::list<const Feature*> FeatureDB::Query(const Feature *feat) {
-    std::list<const Feature*> result;
-    std::vector<result_tmp> tmp;
-    int k = 0;
-    for (int i = 0; i < _cur_len; ++i) {
-        float sim = _arr_feat[i]->Compare(feat, OM_THRESHOLD);
-        if (sim == -1.0) k++;
-        //printf("%f\n", sim);
-        if (sim > OM_THRESHOLD) {
-            //printf("get result: %d\n", _arr_feat[i]->GetKeyId());
-            //result.push_back(_arr_feat[i]);
-            tmp.push_back(result_tmp(sim, _arr_feat[i]));
-        }
-    }
-
-    //printf("k %d\n", k);
-
-    std::sort(tmp.begin(), tmp.end(), cmp);
-    for (int i = 0; i < tmp.size(); ++i) {
-        result.push_back(tmp[i].ptr);
-    }
-    return result;
-}
 
 } // namespace vcd

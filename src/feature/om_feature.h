@@ -19,6 +19,7 @@
 
 namespace vcd {
 
+
 class OM {
 public:
     OM();
@@ -29,7 +30,7 @@ public:
     virtual uint64 GetHashKey(int n) const = 0;
     virtual bool Print();
     bool SetID(uint64 id);
-    uint64 GetID();
+    uint64 GetID() const;
 
     //
     // output all common data of feature to file
@@ -157,6 +158,7 @@ private:
     int _n;
 };
 
+OM* ReadFeatureFromFile(FILE *pf, int type);
 
 } // namespace vcd
 
