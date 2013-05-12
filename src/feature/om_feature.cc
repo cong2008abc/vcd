@@ -194,6 +194,7 @@ uint64 SimplyOM::GetHashKey(int n) const {
 
 bool SimplyOM::DumpToFile(FILE *pf) {
     OM::DumpToFile(pf);
+//    fprintf(stderr, "%d\n", _n);
     fwrite(&_n, sizeof(int), 1, pf);
     fwrite(_arr_color, sizeof(uint8), _n, pf);
     fwrite(&_binary_idx, sizeof(uint64), 1, pf);
@@ -226,16 +227,27 @@ SimplyOM* SimplyOM::ReadFromFile(FILE *pf) {
     if (ret != 1) {
         return NULL;
     }
-    fread(&n, sizeof(int), 1, pf);
+    if (fread(&n, sizeof(int), 1, pf) != 1) {
+        return NULL;
+    }
 
-    fprintf(stderr, "%llu %d\n", key, n);
+ //   fprintf(stderr, "%llu %d\n", key, n);
 
     SimplyOM *feat = new SimplyOM(n);
     feat->SetID(key);
-    fread(feat->_arr_color, sizeof(uint8), n, pf);
-    fread(&feat->_binary_idx, sizeof(uint64), 1, pf);
+    ret = fread(feat->_arr_color, sizeof(uint8), n, pf);
+    if (ret != n) {
+        goto Failure;
+    }
+    ret = fread(&feat->_binary_idx, sizeof(uint64), 1, pf);
+    if (ret != 1) {
+        goto Failure;
+    }
 
     return feat;
+Failure:
+    delete feat;
+    return NULL;
 }
 
 SimplyOM* SimplyOM::SampleFeature(int n) {

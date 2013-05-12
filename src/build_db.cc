@@ -1,6 +1,7 @@
 #include "feature_db.h"
 #include "info_db.h"
 #include "utils.h"
+#include "global.h"
 #include "gtest/gtest.h"
 #include "feature/feature.h"
 #include "feature/om_feature.h"
@@ -12,7 +13,7 @@ vcd::FeatureDB *db;
 vcd::InfoDB *info_db;
 
 void init() {
-    db = new vcd::FeatureDB();
+    //db = new vcd::FeatureDB();
     info_db = new vcd::InfoDB();
 }
 
@@ -27,32 +28,35 @@ const char *prefix = "/mnt/book/part";
 
 int frame_process(unsigned char *data, int w, int h)
 {
-    if (frame_idx++ % 7 != 0) {
-        feat_num++;
-        if (feat_num % 100 == 0) {
-            printf("%d\n", feat_num);
-        }
-        return 0;
-    }
+//    if (frame_idx++ % 29 != 0) {
+//        return 0;
+//    }
+
+    // count the sampled frame num
+//    feat_num++;
+//    if (feat_num % 100 == 0) {
+//        printf("%d\n", feat_num);
+//    }
+
     vcd::uint32 feature_idx = (video_idx << 16) | frame_idx;
     vcd::OM *om[3];
 
-    om[0] = vcd::SimplyOM::Extract(data, w, h, 8);
-    om[1] = vcd::ImprovedOM::Extract(data, w, h, 8);
-    om[2] = vcd::ImprovedOM::ExtractWithSaliency(data, w, h, 8);
+    om[0] = vcd::SimplyOM::Extract(data, w, h, Global::sub_num);
+    om[1] = vcd::ImprovedOM::Extract(data, w, h, Global::sub_num);
+    om[2] = vcd::ImprovedOM::ExtractWithSaliency(data, w, h, Global::sub_num);
 
     for (int i = 0; i < 3; i++) {
         om[i]->SetID(feature_idx);
+        //om[i]->Print();
         om[i]->DumpToFile(pf[i]);
-
         delete om[i];
     }
 
-    //for (int i = 0; i < 3; i++)
-    //    delete om[i];
-
-
     return 0;
+}
+
+void* extract_video_thread(void *arg) {
+
 }
 
 void extract_video(const char *video_dir)
@@ -69,7 +73,10 @@ void extract_video(const char *video_dir)
         feat_num = 0;
         char name[128];
         for (int i = 0; i < 3; i++) {
-            sprintf(name, "../feature_om/%d_%d_%d.smp", video_idx, file_idx, i);
+//            sprintf(name, "../feature_om/%d_%d_%d.smp", video_idx, file_idx, i);
+            sprintf(name, "%s/%s/%d_%d.smp", Global::feat_path_prefix,
+                                             Global::feat_path[i], video_idx,
+                                             file_idx);
             pf[i] = fopen(name, "w");
 
             if (pf[i] == NULL) {
@@ -79,7 +86,7 @@ void extract_video(const char *video_dir)
 
         printf("processing %s\n", file.c_str());
         vcd::Imitation::ProcessVideo(file.c_str(), frame_process);
-        printf("get %d frames\n", feat_num);
+        printf("sample %d frames from %d total frames\n", feat_num, frame_idx);
 
         for (int i = 0; i < 3; i++) {
             fclose(pf[i]);
@@ -87,6 +94,9 @@ void extract_video(const char *video_dir)
         }
 
         file_idx++;
+//        if (file_idx > 30) {
+//            break;
+//        }
     }
 }
 
@@ -100,6 +110,8 @@ void extract_video(int start_idx, int n) {
 
         video_idx++;
     }
+
+    //printf("Get Features: %d\n", feat_num);
 }
 
 void process_jpg_dir(const char *path) {
@@ -108,6 +120,21 @@ void process_jpg_dir(const char *path) {
     std::string file;
     int w, h;
     unsigned char *buf = new unsigned char[1024 * 1024 * 3];
+
+    video_idx = 0x03;
+    int file_idx = 0x01;
+
+    char name[128];
+    for (int i = 0; i < 3; i++) {
+        sprintf(name, "%s/%s/%d_%d.smp", Global::feat_path_prefix,
+                                         Global::feat_path[i], video_idx,
+                                         file_idx);
+        pf[i] = fopen(name, "w");
+
+        if (pf[i] == NULL) {
+            fprintf(stderr, "Something Terrible happens\n");
+        }
+    }
     //int i = 0;
     while (1) {
         if (dir.GetNextFile(&file) == false) break;
@@ -116,19 +143,29 @@ void process_jpg_dir(const char *path) {
             continue;
         }
 
-        printf("%s\n", file.c_str());
 
-        vcd::ImpOMFeature *impOM = new vcd::ImpOMFeature;
-        vcd::uint32 feature_idx = info_db->Insert(file.c_str());
-        impOM->ExtractFrame(buf, w, h);
-        impOM->SetKeyId(feature_idx);
+
+        frame_idx = info_db->Insert(file.c_str());
+        printf("%s %d\n", file.c_str(), frame_idx);
+        frame_process(buf, w, h);
+//        vcd::ImpOMFeature *impOM = new vcd::ImpOMFeature;
+//        impOM->ExtractFrame(buf, w, h);
+//        impOM->SetKeyId(feature_idx);
     }
 
     delete [] buf;
+    info_db->Dump("../info/attack.db");
 }
 
 TEST(extract, video) {
-    extract_video(364,1);
+    //extract_video(407, 28);
+}
+
+TEST(extract, jpg) {
+    init();
+    //process_jpg_dir("/mnt/share/image_query");
+    process_jpg_dir("/mnt/share/image_lib/attack");
+    //process_jpg_dir("/mnt/share/image_db");
 }
 
 //TEST(speed, extract) {

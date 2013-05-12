@@ -1,4 +1,5 @@
 #include "define.h"
+#include "global.h"
 #include "feature_db.h"
 #include "feature/feature.h"
 #include "base/vcd_dir.h"
@@ -16,7 +17,7 @@ typedef unsigned int uint32;
 const float OM_THRESHOLD = 0.30;
 
 FeatureDB::FeatureDB() {
-    _feat_index = new OMIndex(7);
+    _feat_index = new OMIndex(Global::feature_db_size);
 }
 
 FeatureDB::~FeatureDB() {
@@ -34,17 +35,25 @@ bool FeatureDB::OpenDB(const char *db_path, int om_type) {
         }
 
         FILE *pf = fopen(feature_path.c_str(), "rb");
-        if (pf == NULL) continue;
+        if (pf == NULL) {
+            printf("Open Feature File Error! %s\n", feature_path.c_str());
+            continue;
+        } else {
+            //printf("%s\n", feature_path.c_str());
+        }
         while (true) {
             OM *feat = ReadFeatureFromFile(pf, om_type);
             if (feat == NULL) {
                 break;
             }
 
-            _feat_index->Insert(feat); 
+            if (_feat_index->Insert(feat) == false) {
+                fprintf(stderr, "Error!\n");
+            }
             k++;
             //feat->Print();
         }                
+        fclose(pf);
     }
 
     printf("%d\n", k);

@@ -35,7 +35,7 @@ public:
     //
     // output all common data of feature to file
     //
-    bool DumpToFile(FILE *pf);
+    virtual bool DumpToFile(FILE *pf);
     
 protected:
     /*

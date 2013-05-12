@@ -1,7 +1,11 @@
-#include "om_interface.h"
+#include "feature_db.h"
+#include "info_db.h"
+#include "global.h"
 #include "utils.h"
 #include "imitation.h"
 #include "feature/common.h"
+#include "base/vcd_dir.h"
+#include "gtest/gtest.h"
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -17,6 +21,77 @@ char db_path[] = "../feature_om/";
 unsigned char *img_data;
 int kMaxSize;
 
+vcd::FeatureDB *db;
+vcd::InfoDB *info_db_query;
+vcd::InfoDB *info_db_src;
+
+int open_db() {
+    db = new vcd::FeatureDB();
+    db->OpenDB(Global::lib_path, Global::query_method);
+
+    info_db_query = new vcd::InfoDB();
+    info_db_query->OpenDB(Global::info_db_query);
+
+    info_db_src = new vcd::InfoDB();
+    info_db_src->OpenDB(Global::info_db_src);
+
+    return 0;
+}
+
+int query(const vcd::OM *feat_query) {
+    const vcd::OM *feat_ret;
+    float ret = db->Query(feat_query, &feat_ret);
+
+    vcd::uint64 key = feat_ret->GetID();
+//    printf("%llu %llu\n", MAIN_KEY(key), FRAME_ID(key));
+    if (MAIN_KEY(key) == 2) {
+        printf("## %f %s\n", ret, info_db_src->GetItem(FRAME_ID(key)));
+        show_image_from_path(info_db_src->GetItem(FRAME_ID(key)));
+    } else {
+        printf("## %f null\n", ret);
+    }
+
+    return 0;
+}
+
+void test_method(const char *path, int om_type) {
+    vcd::Dir feat_dir;    
+    feat_dir.OpenDir(path);
+    std::string feature_path;
+    int k = 0;
+    while (true) {
+        if (feat_dir.GetNextFile(&feature_path) == false) {
+            break;
+        }
+            printf("%s\n", feature_path.c_str());
+
+        FILE *pf = fopen(feature_path.c_str(), "rb");
+        if (pf == NULL) {
+            printf("Open Feature File Error! %s\n", feature_path.c_str());
+            continue;
+        } else {
+            //printf("%s\n", feature_path.c_str());
+        }
+
+        while (true) {
+            vcd::OM *feat = vcd::ReadFeatureFromFile(pf, om_type);
+            if (feat == NULL) {
+                break;
+            }
+
+            vcd::uint64 key = feat->GetID();
+            printf(">>%s\n", info_db_query->GetItem(FRAME_ID(key)));
+            show_image_from_path(info_db_query->GetItem(FRAME_ID(key)));
+            query(feat);
+
+            k++;
+        }                
+        fclose(pf);
+    }
+    printf("%d\n", k);
+    
+}
+
 void test_dir(const char *path) {
     vcd::Imitation imgs;
     if (imgs.OpenJpgDb(path) == false) {
@@ -30,7 +105,7 @@ void test_dir(const char *path) {
             break;
         }
 
-        query_image(img_data, w, h);
+        //query_image(img_data, w, h);
     }
 }
 
@@ -51,16 +126,15 @@ void test_yuv(const char *path) {
 //    imi.GetNextYUV(query_image);
 }
 
-int main(int argc, char **argv) {
-    open_db(db_path); 
-//    kMaxSize = 1024 * 1024 * 3;
-//    img_data = new unsigned char[kMaxSize];
-//    test_dir(argv[1]);
-//
-//    for (int i = 0; i < LIB_NUM; ++i) {
-//        test_dir(lib[i]);
-//    }
+TEST(query, om) {
+    test_method(Global::query_path, Global::query_method);
+}
 
-    close_db();
-//    delete [] img_data;
+int main(int argc, char **argv) {
+//    open_db(); 
+//    test_method(Global::query_path, Global::query_method);
+
+    testing::InitGoogleTest(&argc, argv);
+    open_db();
+    return RUN_ALL_TESTS();
 }

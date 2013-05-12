@@ -31,6 +31,7 @@ bool OMIndex::Insert(const OM *ele) {
     int pos = GetHashKey(ele);
 
     if (pos < 0 || pos >= _db_num) {
+        printf("??Er %d %d\n", pos, _db_num);
         return false;
     }
     
@@ -65,7 +66,7 @@ bool OMIndex::PrintCurrentInfo() {
 // Maybe not a good solution
 //
 int OMIndex::GetHashKey(const OM *ele) const {
-    int key = ele->GetHashKey(this->_hash_param);
+    uint64 key = ele->GetHashKey(this->_hash_param);
 
     return key % _db_num;
 }

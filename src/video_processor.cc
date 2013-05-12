@@ -131,8 +131,6 @@ int read_video(const char *path, process_func process) {
                 offset += width;
             }
         }
-        //show_yuv_colorful(buffer, width * 2, height * 2);
-//        show_yuv(buffer, width * 2, height * 2);
         (*process)(buffer, width * 2, height * 2);
     }
 

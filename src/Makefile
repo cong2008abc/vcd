@@ -20,7 +20,7 @@ ROOT_DIR = .
 #
 
 # exec
-EXEC := run_test_om	run_test_sa build_db \
+EXEC := run_test_om run_test_sa build_db \
 		#generate_test_data sample_frame
 # unittest targets
 UNITTEST = unittest_imagebuf unittest_ominterface
@@ -145,7 +145,7 @@ EXEC_OBJS = $(subst .cc,.o,$(EXEC_SRCS))
 
 run_%: %.o $(EXEC_OBJS)
 	@echo LINK Exec [$@]
-	$(CC) -o $@ $^ $(EXEC_LDFLAS)
+	$(CC) -o $@ $^ $(EXEC_LDFLAS) lib/libgtest.a
 	@echo
 
 build_db: build_db.o $(EXEC_OBJS)
@@ -202,6 +202,9 @@ unittest_ominterface: $(UNITTEST_OMINTERFACE_OBJS)
 # special rules for unittest_*.cc
 # 
 unittest_%.o: unittest_%.cc
+	$(CC) $(CFLAGS) $(CFLAGS_TEST) -c $<
+
+test_%.o: test_%.cc
 	$(CC) $(CFLAGS) $(CFLAGS_TEST) -c $<
 
 build_db.o: build_db.cc
