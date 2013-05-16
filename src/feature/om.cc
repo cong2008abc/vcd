@@ -123,8 +123,8 @@ void remove_margin(const cv::Mat &data, cv::Rect *res) {
     int top, bottom, left, right;
     int i;
     
-    int max_margin_row = data.rows / 8;
-    int max_margin_col = data.cols / 8;
+    int max_margin_row = data.rows / 6;
+    int max_margin_col = data.cols / 6;
     
     // 1= find the top
     int top_upper = max_margin_row;

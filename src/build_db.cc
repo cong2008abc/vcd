@@ -121,7 +121,7 @@ void process_jpg_dir(const char *path) {
     int w, h;
     unsigned char *buf = new unsigned char[1024 * 1024 * 3];
 
-    video_idx = 0x03;
+    video_idx = 0x05;
     int file_idx = 0x01;
 
     char name[128];
@@ -154,7 +154,7 @@ void process_jpg_dir(const char *path) {
     }
 
     delete [] buf;
-    info_db->Dump("../info/attack.db");
+    info_db->Dump("../info/attack_cur_more.db");
 }
 
 TEST(extract, video) {
@@ -164,8 +164,8 @@ TEST(extract, video) {
 TEST(extract, jpg) {
     init();
     //process_jpg_dir("/mnt/share/image_query");
-    process_jpg_dir("/mnt/share/image_lib/attack");
-    //process_jpg_dir("/mnt/share/image_db");
+    //process_jpg_dir("/mnt/share/image_lib/attack");
+    process_jpg_dir("/mnt/share/image_lib/cut2");
 }
 
 //TEST(speed, extract) {

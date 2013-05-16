@@ -28,6 +28,7 @@ public:
     virtual float Compare(const OM *rf) const = 0;
     virtual float SpeedCompare(const OM *rf, int diff) const = 0;
     virtual uint64 GetHashKey(int n) const = 0;
+    virtual bool GetHashKeys(int n, uint64 *ret, int num) const = 0;
     virtual bool Print();
     bool SetID(uint64 id);
     uint64 GetID() const;
@@ -77,6 +78,7 @@ protected:
     // extract hashkey for the sorted array
     //
     uint64 HashArray(const uint8 *a, int len, int n) const;
+    uint64 HashArray(const uint8 *a, const uint8 *choose, int n) const;
 
 private:
     uint64 _key_id;
@@ -90,6 +92,7 @@ public:
     float Compare(const OM *rf) const;
     float SpeedCompare(const OM *rf, int diff) const;
     uint64 GetHashKey(int n) const;
+    bool GetHashKeys(int n, uint64 *ret, int num) const;
     bool DumpToFile(FILE *pf);
     bool Print();
 
@@ -131,6 +134,7 @@ public:
     float SpeedCompare(const OM *rf, int diff) const;
     float SpeedCompare(const OM *rf, int diff, float thres) const;
     uint64 GetHashKey(int n) const;
+    bool GetHashKeys(int n, uint64 *ret, int num) const;
     bool DumpToFile(FILE *pf);
     bool Print();
 

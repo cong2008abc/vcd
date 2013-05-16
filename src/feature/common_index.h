@@ -86,13 +86,19 @@ float CommonIndex<T>::Query(T &ele, T *ret, index_cmp cmp) const {
     //
     // use the functon compare each element in the array
     //
+    //
+    int tmp = 0;
     for (int i = 0; i < _len; i++) {
         float ret = (*cmp)(_arr[_brother][i], ele);
         if (ret > vmax) {
             vmax = ret;
             pos = i;
         }
+
+    //    if (ret != -1.0) tmp++;
     }
+
+    //printf("???%d\n", tmp);
 
     if (pos == -1) {
         *ret = NULL;

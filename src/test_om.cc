@@ -42,11 +42,16 @@ int query(const vcd::OM *feat_query) {
     const vcd::OM *feat_ret;
     float ret = db->Query(feat_query, &feat_ret);
 
+    if (feat_ret == NULL) {
+        printf("## -1.0 null\n");
+        return 1;
+    }
+
     vcd::uint64 key = feat_ret->GetID();
 //    printf("%llu %llu\n", MAIN_KEY(key), FRAME_ID(key));
     if (MAIN_KEY(key) == 2) {
         printf("## %f %s\n", ret, info_db_src->GetItem(FRAME_ID(key)));
-        show_image_from_path(info_db_src->GetItem(FRAME_ID(key)));
+        //show_image_from_path(info_db_src->GetItem(FRAME_ID(key)));
     } else {
         printf("## %f null\n", ret);
     }
@@ -81,10 +86,14 @@ void test_method(const char *path, int om_type) {
 
             vcd::uint64 key = feat->GetID();
             printf(">>%s\n", info_db_query->GetItem(FRAME_ID(key)));
-            show_image_from_path(info_db_query->GetItem(FRAME_ID(key)));
+            //show_image_from_path(info_db_query->GetItem(FRAME_ID(key)));
             query(feat);
 
             k++;
+            printf("%??? %d\n", k);
+
+//            if (k > 100)
+//                break;
         }                
         fclose(pf);
     }

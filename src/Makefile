@@ -20,8 +20,8 @@ ROOT_DIR = .
 #
 
 # exec
-EXEC := run_test_om run_test_sa build_db \
-		#generate_test_data sample_frame
+EXEC := run_test_om run_test_sa build_db match \
+		generate_test_data #sample_frame
 # unittest targets
 UNITTEST = unittest_imagebuf unittest_ominterface
 # all tests
@@ -149,6 +149,11 @@ run_%: %.o $(EXEC_OBJS)
 	@echo
 
 build_db: build_db.o $(EXEC_OBJS)
+	@echo LINK Exec [$@]
+	$(CC) -o $@ $^ $(EXEC_LDFLAS) lib/libgtest.a
+	@echo
+
+match: match.o $(EXEC_OBJS)
 	@echo LINK Exec [$@]
 	$(CC) -o $@ $^ $(EXEC_LDFLAS) lib/libgtest.a
 	@echo

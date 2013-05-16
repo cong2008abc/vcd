@@ -9,10 +9,10 @@ def plus_logo(path):
         for item in f:
             img = os.path.join(p, item)
             num = int(item.split('.')[0])
-            nimg = os.path.join('/mnt/share/image_db4', str(num) + '_10.jpg')
+            nimg = os.path.join('/mnt/share/image_db', str(num) + '_10.jpg')
 
             cmd = 'convert ' + img
-            cmd += ' logo.png -gravity '
+            cmd += ' logo_s.png -gravity '
 
             k = random.randint(0,3)
             cmd += direct[k]

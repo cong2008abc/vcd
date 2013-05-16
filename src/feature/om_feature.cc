@@ -8,6 +8,18 @@
 
 namespace vcd {
 
+static const int pattern_size = 7;
+static const uint8 pattern_seed[] = {2, 3, 4, 5, 6, 7,8,
+                   10, 11, 12, 13, 14, 15, 16,
+                   20, 21, 22, 23, 24, 25, 26,
+                   26, 27, 28, 29, 56, 57, 58,
+                   29, 31, 33, 35, 40, 41, 42,
+                   30, 31, 32, 33, 34, 35, 36,
+                   36, 37, 38, 39, 40, 41, 42,
+                   40, 42, 44, 46, 48, 49, 50,
+                   50, 51, 52, 53, 54, 55, 56,
+                   58, 59, 60, 61, 62, 63, 0};
+
 //
 // base class [ OM ]
 //
@@ -86,6 +98,8 @@ int OM::HammCompare(const uint64 a, const uint64 b) const {
         k++;
     }
 
+    //printf("%d\n", k);
+
     return k;
 }
 
@@ -124,31 +138,56 @@ bool sort_t_cmp(const sort_t &a, const sort_t &b) {
 }
 
 uint64 OM::HashArray(const uint8 *a, int len, int n) const {
-    const int interval = 5; 
+    const int interval = 2; 
     sort_t *temp = new sort_t[n];
-    for (int i = 0, pos = 0; i < n; i++) {
-        temp[i].pre = a[pos];
+    //const int pos[] = {19, 22, 27, 29, 32, 31};
+    //const int pos[] = {19, 20, 21, 22, 23, 24};
+    const int pos[] = {5, 7, 9, 10, 12, 14};
+    for (int i = 0; i < n; i++) {
+        temp[i].pre = a[pos[i]];
         temp[i].idx = i;
-
-        pos += interval;
-        pos %= len;
     }
 
     std::sort(temp, temp + n, sort_t_cmp);
-    int k = 1;
-    int t = 0;
-    while (k < n) {
-        k = k << 1;
-        t++;
+
+    static int number[] = {1, 2, 6, 24, 120, 720, 5040};
+    uint64 ret = 0;
+    uint8 factor;
+    for (int i = 0; i < n; i++) {
+        factor = temp[i].idx;
+        for (int j = i - 1; j >= 0; j--) {
+            if (temp[j].idx < temp[i].idx)
+                factor--;
+        } 
+        ret += factor * number[n - 1 - i];
+    }
+    fprintf(stderr, "??%d\n", ret);
+
+    delete [] temp;
+
+    return ret;
+}
+
+uint64 OM::HashArray(const uint8 *a, const uint8 *choose, int n) const {
+    sort_t *temp = new sort_t[n];
+    const uint8 *pos = choose;
+    for (int i = 0; i < n; i++) {
+        temp[i].pre = a[pos[i]];
+        temp[i].idx = i;
     }
 
+    std::sort(temp, temp + n, sort_t_cmp);
+    static int number[] = {1, 2, 6, 24, 120, 720, 5040};
     uint64 ret = 0;
-    for (int i = 0; i < n; i++) {
-    //    printf("%d\n", temp[i].idx);
-        ret = ret | (temp[i].idx);
-        ret <<= t;
+    uint8 factor;
+    for (int i = 0; i < n - 1; i++) {
+        factor = temp[i].idx;
+        for (int j = i - 1; j >= 0; j--) {
+            if (temp[j].idx < temp[i].idx)
+                factor--;
+        } 
+        ret += factor * number[n - 2 - i];
     }
-    //printf("?? %llu\n", ret);
 
     delete [] temp;
 
@@ -190,6 +229,10 @@ float SimplyOM::SpeedCompare(const OM *rf_, int diff) const {
 uint64 SimplyOM::GetHashKey(int n) const {
     return HashArray(_arr_color, _n, n);
     //return 0;
+}
+
+bool SimplyOM::GetHashKeys(int n, uint64 *ret, int num) const {
+    return false;
 }
 
 bool SimplyOM::DumpToFile(FILE *pf) {
@@ -243,6 +286,8 @@ SimplyOM* SimplyOM::ReadFromFile(FILE *pf) {
     if (ret != 1) {
         goto Failure;
     }
+
+    feat->ExtractBinaryIndex(feat->_arr_color, &feat->_binary_idx, n);
 
     return feat;
 Failure:
@@ -316,6 +361,17 @@ uint64 ImprovedOM::GetHashKey(int n) const {
     return HashArray(_arr_color, _n, n);
 }
 
+bool ImprovedOM::GetHashKeys(int n, uint64 *ret, int num) const {
+    static const uint8 *pattern = pattern_seed;
+    
+
+    for (int i = 0; i < num; i++) {
+        ret[i] = HashArray(_arr_color, pattern + i * pattern_size, n); 
+    }
+
+    return true;
+}
+
 bool ImprovedOM::DumpToFile(FILE *pf) {
     OM::DumpToFile(pf);
     fwrite(&_n, sizeof(int), 1, pf);
@@ -363,7 +419,7 @@ ImprovedOM* ImprovedOM::ExtractWithSaliency(const uint8 *data, int w,
 
     // 1= resize the img to small size in order to reduce
     //    time of get saliency area
-    resize_mat_by_width(img_rgb, img_rgb, 160);
+    //resize_mat_by_width(img_rgb, img_rgb, 160);
 
     cv::Mat img = img_rgb;
     cv::Rect margin;
@@ -373,16 +429,21 @@ ImprovedOM* ImprovedOM::ExtractWithSaliency(const uint8 *data, int w,
     cv::Mat roi(img, margin);
     cv::Rect rect;
     cv::Mat saliency_map;
-    Saliency::Get(roi, saliency_map);    
+    Saliency::Get(roi, saliency_map);
     Saliency::ExtractView(saliency_map, rect);
 
     // 3= convert to the whole coordiate
     rect.x += margin.x;
     rect.y += margin.y;
 
+//    show_mat(saliency_map);
+//    show_mat(cv::Mat(img, rect));
+
     // 4= extract om feature on yuv data
+    //cv::Rect rect = margin;
     ImprovedOM *feat = new ImprovedOM(n * n);
     get_real_feature(data, w, h, rect, n, feat->_arr_color, feat->_arr_entropy);
+    //feat->Print();
 
 
     // 5= get the index of feature
@@ -409,6 +470,9 @@ ImprovedOM* ImprovedOM::ReadFromFile(FILE *pf) {
     feat->SetID(key);
     fread(feat->_arr_color, sizeof(uint8), n, pf);
     fread(feat->_arr_entropy, sizeof(uint8), n, pf);
+
+    feat->ExtractBinaryIndex(feat->_arr_color, &feat->_binary_idx_color, n);
+    feat->ExtractBinaryIndex(feat->_arr_entropy, &feat->_binary_idx_ent, n);
 
     return feat;
 }
