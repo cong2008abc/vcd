@@ -9,16 +9,39 @@
 namespace vcd {
 
 static const int pattern_size = 7;
-static const uint8 pattern_seed[] = {2, 3, 4, 5, 6, 7,8,
-                   10, 11, 12, 13, 14, 15, 16,
-                   20, 21, 22, 23, 24, 25, 26,
-                   26, 27, 28, 29, 56, 57, 58,
+static const uint8 pattern_seed[] = {2, 8, 17, 51, 22, 37, 48,
+                   10, 19, 32, 43, 54, 25, 18,
+                   20, 25, 12, 27, 29, 35, 46,
+                   26, 37, 49, 59, 16, 27, 18,
                    29, 31, 33, 35, 40, 41, 42,
                    30, 31, 32, 33, 34, 35, 36,
                    36, 37, 38, 39, 40, 41, 42,
                    40, 42, 44, 46, 48, 49, 50,
                    50, 51, 52, 53, 54, 55, 56,
                    58, 59, 60, 61, 62, 63, 0};
+//static const uint8 pattern_seed[] = {2, 3, 4, 5, 6, 7, 8,
+//                   9, 10, 11, 12, 13, 14, 15,
+//                   16, 17, 18, 19, 20, 21, 22,
+//                   23, 24, 25, 26, 27, 28, 29,
+//                   20, 21, 22, 23, 24, 25, 26,
+//                   30, 31, 32, 33, 34, 35, 36,
+//                   36, 37, 38, 39, 40, 41, 42,
+//                   40, 42, 44, 46, 48, 49, 50,
+//                   50, 51, 52, 53, 54, 55, 56,
+//                   58, 59, 60, 61, 62, 63, 0};
+
+void print_bits(uint64 bits, int n = 64) {
+    uint64 t = bits;
+    for (int i = 0; i < n; i++) {
+        if (t & (1 << (n - i - 1))) {
+            printf("1");
+        } else {
+            printf("0");
+        }
+        //t >>= 1;
+    }
+    printf("\n");
+}
 
 //
 // base class [ OM ]
@@ -115,9 +138,21 @@ bool OM::ExtractBinaryIndex(const uint8 *a, uint64 *idx, int len) {
     uint64 seed = 0x1;
     uint8 thres = len / 2;
     uint64 &ret = *idx;
-    for (int i = 0; i < len; ++i) {
-        if (a[i] < thres) {
-            ret = ret | (seed << i);    
+//    for (int i = 0; i < len; ++i) {
+//        ret <<= 1;
+//        if (a[i] < thres) {
+//            //ret = ret | (seed << i);    
+//            ret = ret | seed;
+//        }
+//    }
+
+    ret = 0;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            ret <<= 1;
+            if (a[j * 8 + i] < thres) {
+                ret = ret | seed;
+            }
         }
     }
 
@@ -180,7 +215,11 @@ uint64 OM::HashArray(const uint8 *a, const uint8 *choose, int n) const {
     static int number[] = {1, 2, 6, 24, 120, 720, 5040};
     uint64 ret = 0;
     uint8 factor;
+    
+//    printf("?? subrange %d:", n);
+
     for (int i = 0; i < n - 1; i++) {
+//        printf("%d ", temp[i].idx);
         factor = temp[i].idx;
         for (int j = i - 1; j >= 0; j--) {
             if (temp[j].idx < temp[i].idx)
@@ -188,6 +227,8 @@ uint64 OM::HashArray(const uint8 *a, const uint8 *choose, int n) const {
         } 
         ret += factor * number[n - 2 - i];
     }
+
+//    printf("\n");
 
     delete [] temp;
 
@@ -232,7 +273,18 @@ uint64 SimplyOM::GetHashKey(int n) const {
 }
 
 bool SimplyOM::GetHashKeys(int n, uint64 *ret, int num) const {
-    return false;
+    static const uint8 *pattern = pattern_seed;
+
+    for (int i = 0; i < 4; i++) {
+        ret[i] = HashArray(_arr_color, pattern + i * pattern_size, n); 
+    }
+    for (int i = 0; i < num; i++) {
+        printf("?>> %d\n", ret[i]);
+        //ret[i] = ret[i] * ret[3 - i];
+    }
+
+    return true;
+    //return false;
 }
 
 bool SimplyOM::DumpToFile(FILE *pf) {
@@ -288,6 +340,8 @@ SimplyOM* SimplyOM::ReadFromFile(FILE *pf) {
     }
 
     feat->ExtractBinaryIndex(feat->_arr_color, &feat->_binary_idx, n);
+
+    feat->Print();
 
     return feat;
 Failure:
@@ -363,14 +417,68 @@ uint64 ImprovedOM::GetHashKey(int n) const {
 
 bool ImprovedOM::GetHashKeys(int n, uint64 *ret, int num) const {
     static const uint8 *pattern = pattern_seed;
-    
 
     for (int i = 0; i < num; i++) {
         ret[i] = HashArray(_arr_color, pattern + i * pattern_size, n); 
     }
+//    for (int i = 0; i < num; i++) {
+////        printf("?? ret val: %d\n", ret[i]);
+//        ret[i] = ret[i];
+//    }
 
     return true;
 }
+
+uint64 get_sub_bits(uint64 bits,int len, int start, int n) {
+    int mask = (1 << n) - 1; 
+    int end = start + n;
+    int remove = len - end;
+    
+    return (bits >> remove) & mask;
+}
+
+//
+// new hash function by using index_feature
+//
+//bool ImprovedOM::GetHashKeys(int n, uint64 *ret, int num) const {
+//    int mask_len = (n + 2) / 3;
+//    //int mask = (1 << mask_len) - 1;
+//    static const uint8 pattern[] = {1, 6, 12, 14, 18, 20, 24, 26, 28, 30, 36, 42, 48, 50};
+//    static const uint8 pattern_m[] = {3, 8, 10, 11, 16, 22, 25, 27, 31, 33, 35, 39, 43, 45};
+//    static const uint8 pattern_l[] = {52, 48, 45, 42, 40, 37, 35, 32, 30, 28};
+//    int start_low = 0, start_up = 8;
+//    int low_p = start_low;
+//    int up_p = start_up;
+//    const int interval = 6;
+//
+//    for (int i = 0; i < num; i++) {
+////        int end = pattern[i] + n;
+////        int remove = _n - end;
+////        ret[i] = (_binary_idx_color >> remove) & mask;
+//        //ret[i] = _binary_idx_color;
+////        ret[i] = (get_sub_bits(_binary_idx_color, _n, 
+////                               pattern[up_p], mask_len) << mask_len) | 
+////                 (get_sub_bits(_binary_idx_color, _n,
+////                               pattern[low_p], mask_len));
+////        uint64 p1 = get_sub_bits(_binary_idx_color, _n,
+////                                 pattern[i], mask_len);
+////        uint64 p3 = get_sub_bits(_binary_idx_color, _n,
+////                                 pattern_m[i], mask_len);
+////        uint64 p2 = get_sub_bits(_binary_idx_color, _n,
+////                                 pattern_l[i], mask_len);
+////        
+////        ret[i] = (p2 << (mask_len * 2)) | (p3 << (mask_len)) | p1;
+//        //ret[i] = _binary_idx_color;
+//
+//        ret[i] = get_sub_bits(_binary_idx_color, _n, i * interval, n);
+//
+//        //printf("|| %llu %llu %llu %llu\n", ret[i]);
+////        printf("|| %llu ", ret[i]);
+////        print_bits(ret[i], n);
+//    }
+//
+//    return true;
+//}
 
 bool ImprovedOM::DumpToFile(FILE *pf) {
     OM::DumpToFile(pf);
@@ -473,6 +581,10 @@ ImprovedOM* ImprovedOM::ReadFromFile(FILE *pf) {
 
     feat->ExtractBinaryIndex(feat->_arr_color, &feat->_binary_idx_color, n);
     feat->ExtractBinaryIndex(feat->_arr_entropy, &feat->_binary_idx_ent, n);
+
+    //printf("?? %llu %llu\n", feat->_binary_idx_color, feat->_binary_idx_ent);
+//    printf("??");
+//    print_bits(feat->_binary_idx_color);
 
     return feat;
 }

@@ -95,10 +95,10 @@ float CommonIndex<T>::Query(T &ele, T *ret, index_cmp cmp) const {
             pos = i;
         }
 
-    //    if (ret != -1.0) tmp++;
+        if (ret != -1.0) tmp++;
     }
 
-    //printf("???%d\n", tmp);
+    printf("???%d\n", tmp);
 
     if (pos == -1) {
         *ret = NULL;
@@ -117,7 +117,10 @@ const T* CommonIndex<T>::GetAllElement(int *len) const {
 
 template<typename T>
 bool CommonIndex<T>::Print() {
-    fprintf(stderr, "feat: %d, capacity: %d\n", _len, _capacity);
+    if (_capacity <= _len * 2) {
+        fprintf(stderr, "%d[feat], %d[capacity]\n", _len, _capacity);
+    }
+    printf("%d[feat], %d[capacity]\n", _len, _capacity);
     return true;
 }
 
@@ -126,6 +129,10 @@ bool CommonIndex<T>::Expend() {
     // try to alloc a new memory 
     // return false if failure
     //
+    if (_capacity > 30000) {
+        return false;
+    }
+
     T* temp;
     try {
         temp = new T[_capacity << 1];

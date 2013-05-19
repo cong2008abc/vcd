@@ -47,6 +47,8 @@ def draw_precision_three(da, db, dc):
     pl2, = pl.plot(db[0], db[1], 'g')
     pl3, = pl.plot(dc[0], dc[1], 'b')
 
+    pl.xlim(0.2, 0.7)
+    #pl.ylim(0.6, 1.0)
     pl.title('precision of OM vs Improved OM vs Saliency OM')
     pl.xlabel('threshold')
     pl.ylabel('precision')

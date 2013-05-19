@@ -18,4 +18,4 @@ const char* Global::info_db_query = "../info/attack.db";
 const char* Global::info_db_src = "../info/src.db";
 
 // control the bin of hash in feature_db
-int Global::feature_db_size = 732;
+int Global::feature_db_size = 15763;

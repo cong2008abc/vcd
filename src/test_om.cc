@@ -50,6 +50,7 @@ int query(const vcd::OM *feat_query) {
     vcd::uint64 key = feat_ret->GetID();
 //    printf("%llu %llu\n", MAIN_KEY(key), FRAME_ID(key));
     if (MAIN_KEY(key) == 2) {
+        printf("?? %llu\n", key);
         printf("## %f %s\n", ret, info_db_src->GetItem(FRAME_ID(key)));
         //show_image_from_path(info_db_src->GetItem(FRAME_ID(key)));
     } else {
@@ -90,10 +91,9 @@ void test_method(const char *path, int om_type) {
             query(feat);
 
             k++;
-            printf("%??? %d\n", k);
+            printf("??query order %d\n", k);
 
-//            if (k > 100)
-//                break;
+//            if (k > 100) break;
         }                
         fclose(pf);
     }
@@ -135,6 +135,10 @@ void test_yuv(const char *path) {
 //    imi.GetNextYUV(query_image);
 }
 
+TEST(query, init) {
+    open_db();
+}
+
 TEST(query, om) {
     test_method(Global::query_path, Global::query_method);
 }
@@ -144,6 +148,6 @@ int main(int argc, char **argv) {
 //    test_method(Global::query_path, Global::query_method);
 
     testing::InitGoogleTest(&argc, argv);
-    open_db();
+//    open_db();
     return RUN_ALL_TESTS();
 }

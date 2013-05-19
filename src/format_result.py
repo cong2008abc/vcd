@@ -8,9 +8,9 @@ def read_log(path, _thres):
     correct = 0
     recall = 0
 
-    up = 0.7
-    low = 0.0
-    nbin = 10
+    up = 0.8
+    low = 0.2
+    nbin = 9
 
     interval = (up - low) / nbin
     thres = [low + interval * i  for i in xrange(nbin + 1)]

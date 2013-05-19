@@ -29,6 +29,8 @@ bool FeatureDB::OpenDB(const char *db_path, int om_type) {
     feat_dir.OpenDir(db_path);
     std::string feature_path;
         int k = 0;
+    const OM *pre = NULL;
+    int the_same = 0;
     while (true) {
         if (feat_dir.GetNextFile(&feature_path) == false) {
             break;
@@ -47,16 +49,28 @@ bool FeatureDB::OpenDB(const char *db_path, int om_type) {
                 break;
             }
 
-            if (_feat_index->Insert(feat) == false) {
-                fprintf(stderr, "Error!\n");
-            }
             k++;
+            if (pre != NULL) {
+                float tt = pre->Compare(feat);
+                printf("%f\n", tt);
+                if (tt == 1.0) {
+                    the_same++;
+                    feat->Print();
+                    continue;
+                } 
+            }
+
+            pre = feat;
+            if (_feat_index->Insert(feat) == false) {
+//                fprintf(stderr, "Error!\n");
+            }
             //feat->Print();
+//            if (k > 100 * 10000) break;
         }                
         fclose(pf);
     }
 
-    printf("%d\n", k);
+    printf("read feature %d %d\n", k, the_same);
     _feat_index->PrintCurrentInfo();
 
     return true;
