@@ -428,6 +428,10 @@ void get_real_feature(const uint8 *data, int w, int h,
     int subw = pw / N2;
     int subh = ph / N2;
     int len = N2 * N2;
+    
+    //printf("%d %d %d %d\n", subw, subh, w, h);
+    //show_yuv(data, w, h);
+
     position *posAvg = NULL, *posEnt = NULL;
     if (orderAvg != NULL)
         posAvg = new position[len];

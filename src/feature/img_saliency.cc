@@ -378,6 +378,7 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
     int top = view.y;
     int right = view.x + view.width;
     int bottom = view.y + view.height;
+    printf(">> %d %d %d %d\n", left, top, view.width, view.height);
     printf(">>%d %d %d %d\n", left, top, right, bottom);
 
     left = left < 0 ? 0 : left;
@@ -399,8 +400,50 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Mat &result) {
 }
 
 bool Saliency::ExtractView(const cv::Mat &_src, cv::Rect &view) {
+    int window_size = 50;
+    int ret_x, ret_y;
+    int vmax = 0;
+
     const cv::Mat *src = &_src;
-    const float delta = 1.9f;
+    uint8 *ptr = (uint8*)src->data;
+    for (int i = 0; i < src->rows - window_size; i++) {
+        for (int j = 0; j < src->cols - window_size; j++) {
+            int val = 0;
+            for (int tx = 0; tx < window_size; tx++) {
+                for (int ty = 0;  ty < window_size; ty++) {
+                    val += ptr[(i + tx) * src->rows + (j + ty)];
+                }
+            }    
+            if (val > vmax) {
+                vmax = val;
+                ret_x = j;
+                ret_y = i;
+            }
+        }
+    }
+
+
+    view.x = ret_x;
+    view.y = ret_y;
+    view.width = window_size * 3;
+    view.height = window_size * 3;
+
+    // format the rect 
+    // make it inside the map
+    if (view.x < 0) view.x = 0;
+    if (view.y < 0) view.y = 0;
+    if (view.width + view.x >= src->cols)
+        view.width = src->cols - 1 - view.x;
+    if (view.height + view.y >= src->rows)
+        view.height = src->rows - 1 - view.y;
+
+    return true;
+}
+
+/*
+bool Saliency::ExtractView(const cv::Mat &_src, cv::Rect &view) {
+    const cv::Mat *src = &_src;
+    const float delta = 1.5f;
 
     //int n = src->cols * src->rows;
     int n = src->cols * src->rows;
@@ -479,22 +522,11 @@ bool Saliency::ExtractView(const cv::Mat &_src, cv::Rect &view) {
     if (view.height + view.y >= src->rows)
         view.height = src->rows - 1 - view.y;
 
-    /*
-     * do by opencv functions!
-     */
-//    cv::Mat _rows = cv::Mat::zeros(1, src->rows, CV_32F);
-//    cv::Mat _cols = cv::Mat::zeros(1, src->cols, CV_32F);
-//    for (int i = 0; i < src->cols; ++i) {
-//        _rows = _rows + src->col(i) * (i + 1);
-//    }
-//    for (int i = 0; i < src->rows; ++i) {
-//        _cols = _cols + src->row(i) * (i + 1);
-//    }
-
     delete [] sum_cols;
     delete [] sum_rows;
 
     return true;
-}
+} */
+
 
 } // namespace vcd

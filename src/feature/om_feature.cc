@@ -544,15 +544,19 @@ ImprovedOM* ImprovedOM::ExtractWithSaliency(const uint8 *data, int w,
     rect.x += margin.x;
     rect.y += margin.y;
 
-//    show_mat(saliency_map);
-//    show_mat(cv::Mat(img, rect));
+    cv::Mat tmp;
+    Saliency::ExtractView(saliency_map, tmp);
+    show_mat(tmp);
+    //show_mat(saliency_map);
 
     // 4= extract om feature on yuv data
     //cv::Rect rect = margin;
     ImprovedOM *feat = new ImprovedOM(n * n);
     get_real_feature(data, w, h, rect, n, feat->_arr_color, feat->_arr_entropy);
-    //feat->Print();
 
+    feat->Print();
+    show_yuv(data, w, h, rect);
+//    show_mat(cv::Mat(img, rect));
 
     // 5= get the index of feature
 //    ExtractIndex(_arr_color, &idx_a);

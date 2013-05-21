@@ -34,6 +34,9 @@ def read_log(path, _thres):
         #print line.split(' ')
 
         query = line.split('/')[-1]
+        test_num = query.split('.')[0].split('_')[1]
+        if test_num == '16':
+            continue
         query = query.split('.')[0].split('_')[0]
 
 #        print ans_line

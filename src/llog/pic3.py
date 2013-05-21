@@ -28,6 +28,7 @@ def draw_recall_three(da, db, dc):
     pl2, = pl.plot(db[0], db[2], 'g')
     pl3, = pl.plot(dc[0], dc[2], 'b')
 
+    pl.xlim(0.4, 0.7)
     pl.title('recall of OM vs Improved OM vs Saliency OM')
     pl.xlabel('threshold')
     pl.ylabel('recall')

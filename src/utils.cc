@@ -208,6 +208,21 @@ IplImage *yuv2iplImage(const uint8* data, int w, int h) {
     return img;
 }
 
+void show_yuv(const uint8 *data, int w, int h, cv::Rect &rect) {
+    IplImage *img = cvCreateImage(cvSize(rect.width, rect.height),
+                                  IPL_DEPTH_8U, 1);
+    for (int i = 0; i < rect.height; i++) {
+        uint8 *ptr = (uint8*)(img->imageData + i * img->widthStep);
+        for (int j = 0; j < rect.width; j++) {
+            ptr[j] = data[(i + rect.y) * w + j + rect.x];
+        }
+    }
+
+    show_image(img, "subimg");
+
+    cvReleaseImage(&img);
+}
+
 void show_yuv(const uint8* data, int w, int h) {
 //    IplImage *img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
 //    vcd::cvt_YUV2RGB(data, w, h, img);

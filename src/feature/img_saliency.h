@@ -40,6 +40,8 @@ public:
     // this rectange contains the main content of the image
     static bool ExtractView(const cv::Mat&, cv::Rect&);
 
+    static bool ExtractView(const cv::Mat&, cv::Mat&);
+
 private:
     static const int SAL_TYPE_NUM = 5;
     typedef cv::Mat (*GET_SAL_FUNC)(const cv::Mat&);
@@ -54,7 +56,6 @@ private:
                            int a, int u,
                            double (*fun)(int, int, int));
 
-    static bool ExtractView(const cv::Mat&, cv::Mat&);
 
 
     struct Region {

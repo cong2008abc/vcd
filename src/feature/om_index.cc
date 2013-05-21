@@ -12,7 +12,7 @@ float cmp(const OM* &a, const OM* &b) {
 OMIndex::OMIndex(int db_num): _db_num(db_num), _feat_num(0),
                               _thres(0.0f), _speed_thres(32),
                               _hash_param(9),
-                              _hash_key_num(10) {
+                              _hash_key_num(1) {
     if (_db_num <= 0) {
         _db_num = 8196;
     }

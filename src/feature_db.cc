@@ -52,10 +52,10 @@ bool FeatureDB::OpenDB(const char *db_path, int om_type) {
             k++;
             if (pre != NULL) {
                 float tt = pre->Compare(feat);
-                printf("%f\n", tt);
+//                printf("%f\n", tt);
                 if (tt == 1.0) {
                     the_same++;
-                    feat->Print();
+//                    feat->Print();
                     continue;
                 } 
             }

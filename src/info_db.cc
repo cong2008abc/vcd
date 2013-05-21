@@ -25,6 +25,7 @@ InfoDB::~InfoDB() {
 bool InfoDB::OpenDB(const char *db_file) {
     FILE *pf = fopen(db_file, "r");
     if (pf == NULL) {
+        fprintf(stderr, "Open info db %s error\n", db_file);
         return false;
     }
 
@@ -59,6 +60,7 @@ bool InfoDB::OpenDB(const char *db_file) {
         content[size] = '\0';
 
         _ele_map.insert(std::pair<uint32, char *>(key_id, content));
+        //printf("%s\n", content);
     }
 
     fclose(pf);

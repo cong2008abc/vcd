@@ -17,6 +17,7 @@ void show_image_from_path(const char *path);
 void show_yuv(const char *path);
 void show_yuv_colorful(const uint8 *data, int w, int h);
 void show_yuv(const uint8* data, int w, int h);
+void show_yuv(const uint8* data, int w, int h, cv::Rect &rect);
 void show_yuv_and_path(const uint8* data, int w, int h, const char *path);
 void show_query_result(const uint8 *data, int w, int h, const std::vector<std::string> &result);
 
